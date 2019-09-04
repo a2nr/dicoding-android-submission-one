@@ -29,10 +29,6 @@ class ListMovieViewModel(
         val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
         fun getLinkTrandingMovie(media_type: String, time_window: String): Uri {
             return "$LINK_TRANDING/$media_type/$time_window?api_key=$API_KEY".toUri()
-//            return (LINK_TRANDING
-//                    + media_type
-//                    + "/" + time_window
-//                    + "?api_key=" + API_KEY).toUri()
         }
 
         fun getLinkImage(key: String): Uri {
