@@ -24,9 +24,9 @@ class ListMovieViewModel(
     application: Application
 ) : AndroidViewModel(application) {
     companion object {
-        val LINK_TRANDING: String = "https://api.themoviedb.org/3/trending"
-        val API_KEY: String = "a1eea6d03b1f0244d15177fec40aeb61"
-        val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
+        const val LINK_TRANDING: String = "https://api.themoviedb.org/3/trending"
+        const val API_KEY: String = "a1eea6d03b1f0244d15177fec40aeb61"
+        const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
         fun getLinkTrandingMovie(media_type: String, time_window: String): Uri {
             return "$LINK_TRANDING/$media_type/$time_window?api_key=$API_KEY".toUri()
         }
@@ -56,7 +56,7 @@ class ListMovieViewModel(
                 try {
                     jsonObject = JSONObject(tmpString)
                     val a = jsonObject.getJSONArray("results")
-                    md = List<MovieData>(a.length()) {
+                    md = List(a.length()) {
                         val o = a.getJSONObject(it)
                         Log.i("fetchMovieData",o.toString())
                         MovieData().apply {
@@ -89,7 +89,9 @@ class ListMovieViewModel(
                 try {
                     val response = client.newCall(req).execute()
                     val s = response.body?.string()
-                    Log.i("ViewModel", s)
+                    s?.let {
+                        Log.i("ViewModel", it)
+                    }
                     s
                 } catch (e: Exception) {
                     Log.e("ViewModel", e.toString())
