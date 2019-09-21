@@ -3,93 +3,110 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <LinearLayout
-        android:id="@+id/layout_clickable"
-        android:clickable="true"
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="8dp"
-        android:orientation="vertical">
+        app:cardPreventCornerOverlap="true"
+        app:cardCornerRadius="16dp">
 
         <LinearLayout
+            android:id="@+id/layout_clickable"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textShortMessage|textMultiLine"
-                android:text="@android:string/untitled"
-                android:textAlignment="center"
-                android:textSize="28sp"
-                android:textStyle="bold" />
+            android:clickable="true"
+            android:orientation="vertical"
+            android:focusable="true">
 
             <ImageView
                 android:id="@+id/imagePosterMovie"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:scaleType="fitCenter"
+                android:scaleType="centerCrop"
                 tools:srcCompat="@tools:sample/backgrounds/scenic" />
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-
-            <TableLayout
+            <RelativeLayout
+                android:layout_margin="8dp"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <TableRow
+                <LinearLayout
+                    android:id="@+id/llTittle"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
-                    <TextView
+                    <ImageView
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rate : "
-                        android:textAlignment="viewEnd"
-                        android:textStyle="bold" />
+                        android:layout_height="match_parent"
+                        app:srcCompat="@android:drawable/btn_star_big_on" />
 
                     <TextView
                         android:id="@+id/rateText"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-
-                        android:text="@android:string/untitled" />
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_horizontal|center_vertical"
+                        android:gravity="center_horizontal|center_vertical"
+                        android:text="@string/dummy_rate_9_9"
+                        android:textAlignment="center"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/titleText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:inputType="textShortMessage|textMultiLine"
+                        android:text="@android:string/untitled"
+                        android:textAlignment="textStart"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        tools:ignore="TextViewEdits" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/llTittle">
+
+                    <TextView
+                        android:id="@+id/fixLanguageText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:text="| Language : "
-                        android:textAlignment="viewEnd" />
+                        android:layout_marginStart="8dp"
+                        android:text="@string/language"
+                        android:textAlignment="viewEnd"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/languageText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:text="@android:string/untitled" />
 
                     <TextView
+                        android:id="@+id/fixRelaseDateText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textStyle="bold"
-                        android:text=" | Release Date : "
-                        android:textAlignment="viewEnd" />
+                        android:layout_marginStart="8dp"
+                        android:text="@string/release_date"
+                        android:textAlignment="viewEnd"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/releaseDateText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
                         android:text="@android:string/untitled" />
-                </TableRow>
+                </LinearLayout>
+            </RelativeLayout>
 
-            </TableLayout>
         </LinearLayout>
-    </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </layout>

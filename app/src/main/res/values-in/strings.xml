@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Sub Mission Modul 2</string>
+    <string name="title_activity_scrolling">Aktifitas penggulungan</string>
+    <string name="action_settings">Pengaturan</string>
+    <string name="vote">Voting :</string>
+    <string name="type">Tipe :</string>
+    <string name="overview">Rangkuman :</string>
+    <string name="release_at">Terbit di :</string>
+    <string name="movie">Filem</string>
+    <string name="tv_show">Tayangan TV</string>
+    <string name="rate">Rating :</string>
+    <string name="dummy_rate_9_9">9.9</string>
+    <string name="language">Bahasa :</string>
+    <string name="release_date">Tanggal Terbit :</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="lang_code">id</string>
+</resources>

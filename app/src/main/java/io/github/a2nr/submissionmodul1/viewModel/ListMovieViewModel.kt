@@ -7,28 +7,23 @@ import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import kotlinx.coroutines.*
-import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.Response
-import org.json.JSONArray
 import org.json.JSONObject
-import java.lang.Exception
 
 class ListMovieViewModel(
     application: Application
 ) : AndroidViewModel(application) {
     companion object {
-        const val LINK_TRANDING: String = "https://api.themoviedb.org/3/trending"
-        const val API_KEY: String = "a1eea6d03b1f0244d15177fec40aeb61"
-        const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
-        fun getLinkTrandingMovie(media_type: String, time_window: String): Uri {
-            return "$LINK_TRANDING/$media_type/$time_window?api_key=$API_KEY".toUri()
+        const val MOVIE: String = "movie"
+        const val TV: String = "tv"
+        private const val LINK_TRENDING: String = "https://api.themoviedb.org/3/trending"
+        private const val API_KEY: String = "a1eea6d03b1f0244d15177fec40aeb61"
+        private const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
+        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri {
+            return "$LINK_TRENDING/$media_type/$time_window?api_key=$API_KEY&language=$language".toUri()
         }
 
         fun getLinkImage(key: String): Uri {
@@ -45,29 +40,71 @@ class ListMovieViewModel(
     val listMovieData: LiveData<List<MovieData>>
         get() = vmMovieData
 
-    fun fetchMovieData(media_type: String, time_window: String) {
-        val type = media_type
-        val time = time_window
+    fun fetchMovieData(media_type: String, time_window: String, language: String) {
         vmCoroutine.launch {
-            val tmpString = requestMovieData(type, time)
+            val tmpString = requestMovieData(media_type, time_window, language)
             if (!tmpString.isNullOrBlank()) {
                 lateinit var jsonObject: JSONObject
                 val md: List<MovieData>
                 try {
                     jsonObject = JSONObject(tmpString)
                     val a = jsonObject.getJSONArray("results")
-                    md = List(a.length()) {
-                        val o = a.getJSONObject(it)
-                        Log.i("fetchMovieData",o.toString())
+                    md = List(a.length()) { iii ->
+                        val o = a.getJSONObject(iii)
+                        Log.i("fetchMovieData", o.toString())
                         MovieData().apply {
-                            this.title = o.getString("title")
-                            this.backdrop_path = o.getString("backdrop_path")
-                            this.media_type = o.getString("media_type")
-                            this.original_language = o.getString("original_language")
-                            this.overview = o.getString("overview")
-                            this.release_date = o.getString("release_date")
-                            this.vote_average = o.getDouble("vote_average").toFloat()
-                            this.poster_path = o.getString("poster_path")
+                            title = arrayOf("title", "name").run {
+                                this.forEach {
+                                    if (o.has(it)) {
+                                        return@run o.getString(it)
+                                    }
+                                }
+                                "????"
+                            }
+                            backdrop_path = "backdrop_path".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "????"
+                            }
+                            original_language = "original_language".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "????"
+                            }
+                            this.media_type = "media_type".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "????"
+                            }
+                            this.overview = "overview".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "????"
+                            }
+                            release_date = arrayOf("release_date", "first_air_date").run {
+                                this.forEach {
+                                    if (o.has(it)) {
+                                        return@run o.getString(it)
+                                    }
+                                }
+                                "????"
+                            }
+                            this.vote_average = "vote_average".run {
+                                if (o.has(this))
+                                    o.getDouble(this).toFloat()
+                                else
+                                    0f
+                            }
+                            this.poster_path = "poster_path".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "????"
+                            }
                         }
                     }
                     vmMovieData.value = md
@@ -79,12 +116,16 @@ class ListMovieViewModel(
         }
     }
 
-    private suspend fun requestMovieData(media_type: String, time_window: String)
+    private suspend fun requestMovieData(
+        media_type: String,
+        time_window: String,
+        language: String
+    )
             : String? {
         return withContext(Dispatchers.IO) {
             "".run {
                 val req = Request.Builder()
-                    .url(getLinkTrandingMovie(media_type, time_window).toString())
+                    .url(getLinkTrendingMovie(media_type, time_window, language).toString())
                     .build()
                 try {
                     val response = client.newCall(req).execute()
