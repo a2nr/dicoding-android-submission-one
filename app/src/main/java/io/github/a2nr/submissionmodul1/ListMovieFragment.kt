@@ -67,11 +67,11 @@ class ListMovieFragment : Fragment() {
         vM.listMovieData.observe(this, Observer {
             binding.listMovie.adapter = adapter.apply {
                 this.setCallBack(onClickItemView)
+                // object data dipastikan ada dari database
+                // kosong atau gak nya  bakal dicek ketika adapter dieksekusi
+                // kusus nya pada method .getItemCount()
                 this.submitData(it)
-
             }
-//            binding.progressBar.visibility = ProgressBar.GONE
-//            binding.listMovie.visibility =RecyclerView.VISIBLE
             lMd = it
         })
         listenerTab.selectType(resources.getString(R.string.movie))

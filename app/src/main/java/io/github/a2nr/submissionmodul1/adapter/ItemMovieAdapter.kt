@@ -40,12 +40,14 @@ class ItemMovieAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-//        val view = LayoutInflater.from(this.context).inflate(R.layout.item_movie, parent, false)
         val binding = ItemMovieBinding.inflate(LayoutInflater.from(this.context))
         return ViewHolder(binding).set(callBack)
     }
 
     override fun getItemCount(): Int {
+        //.md object selalu ada instance nya. lihat ListMovieFragment:70
+        //.md dan juga sudah dicek dengan if else apakah null atau kosong.
+        //kalau instance null atau kosong maka object viewHolder setiap item tidak akan dibuat.
         return if(md.isNullOrEmpty())
             0
         else
@@ -79,6 +81,7 @@ class ItemMovieAdapter(
         }
 
         fun bind(): View {
+            //.md object selalu ada instance nya. lihat ListMovieFragment:70 dan file ini line 47
             val md = this@ItemMovieAdapter.md!![this.pos]
             binding.titleText.text = md.title
             binding.languageText.text = md.original_language

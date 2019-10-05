@@ -72,109 +72,92 @@
                     app:layout_constraintTop_toTopOf="parent"
                     tools:ignore="TextViewEdits" />
 
-                <LinearLayout
-
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/vote_fix"
+                    android:layout_width="80dp"
                     android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:orientation="vertical"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    android:text="@string/vote"
+                    android:textAlignment="viewEnd"
+                    android:textStyle="bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/titleTextView">
+                    app:layout_constraintTop_toBottomOf="@+id/titleTextView" />
 
-                    <LinearLayout
+                <TextView
+                    android:id="@+id/vote_average"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@android:string/unknownName"
+                    android:textAlignment="viewStart"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toEndOf="@+id/vote_fix"
+                    app:layout_constraintTop_toTopOf="@+id/vote_fix" />
+
+                <TextView
+                    android:id="@+id/type_fix"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/type"
+                    android:textAlignment="viewEnd"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/vote_fix" />
+
+                <TextView
+                    android:id="@+id/media_type"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@android:string/unknownName"
+                    android:textAlignment="viewStart"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/type_fix"
+                    app:layout_constraintTop_toTopOf="@+id/type_fix" />
+
+                <TextView
+                    android:id="@+id/release_fix"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/release_at"
+                    android:textAlignment="viewEnd"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/type_fix"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/release_date"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@android:string/unknownName"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/release_fix"
+                    app:layout_constraintTop_toTopOf="@+id/release_fix" />
+                    android:textAlignment="viewStart" />
+                <TextView
+                    android:id="@+id/overview_fix"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/overview"
+                    android:textAlignment="viewEnd"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/release_fix"
+                    android:textStyle="bold" />
+
+                <ScrollView
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/overview_fix"
+                    app:layout_constraintTop_toTopOf="@+id/overview_fix"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/overview"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/vote"
-                            android:textAlignment="viewEnd"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/vote_average"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@android:string/unknownName"
-                            android:textAlignment="viewStart" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/type"
-                            android:textAlignment="viewEnd"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/media_type"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@android:string/unknownName"
-                            android:textAlignment="viewStart" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/release_at"
-                            android:textAlignment="viewEnd"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/release_date"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="@android:string/unknownName"
-                            android:textAlignment="viewStart" />
-                    </LinearLayout>
-
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
-
-
-                        <TextView
-                            android:layout_width="80dp"
-                            android:layout_height="wrap_content"
-                            android:text="@string/overview"
-                            android:textAlignment="viewEnd"
-                            android:textStyle="bold" />
-
-                        <ScrollView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-
-                            <TextView
-                                android:id="@+id/overview"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="textLongMessage|textMultiLine"
-                                android:text="@android:string/unknownName"
-                                android:textAlignment="viewStart"
-                                tools:ignore="TextViewEdits" />
-                        </ScrollView>
-                    </LinearLayout>
-
-                </LinearLayout>
+                        android:inputType="textLongMessage|textMultiLine"
+                        android:text="@android:string/unknownName"
+                        android:textAlignment="viewStart"
+                        tools:ignore="TextViewEdits" />
+                </ScrollView>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
 
