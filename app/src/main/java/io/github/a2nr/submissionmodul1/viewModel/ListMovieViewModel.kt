@@ -7,6 +7,7 @@ import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import io.github.a2nr.submissionmodul1.BuildConfig
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
@@ -20,7 +21,7 @@ class ListMovieViewModel(
         const val MOVIE: String = "movie"
         const val TV: String = "tv"
         private const val LINK_TRENDING: String = "https://api.themoviedb.org/3/trending"
-        private const val API_KEY: String = "a1eea6d03b1f0244d15177fec40aeb61"
+        private const val API_KEY: String = BuildConfig.TMDB_API_KEY
         private const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
         fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri {
             return "$LINK_TRENDING/$media_type/$time_window?api_key=$API_KEY&language=$language".toUri()
@@ -30,7 +31,6 @@ class ListMovieViewModel(
             return "$LINK_IMAGE$key".toUri()
         }
     }
-
     private val vmJob = Job()
     private val vmCoroutine = CoroutineScope(Dispatchers.Main + vmJob)
     private val client = OkHttpClient()

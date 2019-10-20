@@ -45,20 +45,19 @@ class ItemMovieAdapter(
     }
 
     override fun getItemCount(): Int {
-        //.md object selalu ada instance nya. lihat ListMovieFragment:70
-        //.md dan juga sudah dicek dengan if else apakah null atau kosong.
-        //kalau instance null atau kosong maka object viewHolder setiap item tidak akan dibuat.
-        return if(md.isNullOrEmpty())
-            0
-        else
-            md!!.size
+        return md.let {
+            if (it.isNullOrEmpty())
+                0
+            else
+                it.size
+        }
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.at(position).bind()
     }
 
-    inner class ViewHolder(val binding: ItemMovieBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ViewHolder(private val binding: ItemMovieBinding) : RecyclerView.ViewHolder(binding.root) {
         private var pos: Int = 0
         private var onClickListener: View.OnClickListener
         private var onClick: ((v: View, p: Int) -> Unit)? = null
