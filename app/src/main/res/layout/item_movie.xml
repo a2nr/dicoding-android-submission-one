@@ -7,106 +7,128 @@
         android:id="@+id/card_item"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardPreventCornerOverlap="true"
-        app:cardCornerRadius="16dp">
+        app:cardCornerRadius="16dp"
+        app:cardPreventCornerOverlap="true">
 
-        <LinearLayout
-            android:id="@+id/layout_clickable"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:orientation="vertical"
-            android:focusable="true">
+            android:layout_height="wrap_content">
 
-            <ImageView
-                android:id="@+id/imagePosterMovie"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:scaleType="centerCrop"
-                tools:srcCompat="@tools:sample/backgrounds/scenic" />
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="@+id/layout_clickable"
+                app:layout_constraintStart_toStartOf="@+id/layout_clickable"
+                app:layout_constraintTop_toTopOf="@+id/layout_clickable" />
 
-            <RelativeLayout
-                android:layout_margin="8dp"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:id="@+id/layout_clickable"
+                android:layout_width="300dp"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:clickable="true"
+                android:focusable="true"
+                android:orientation="vertical"
+                android:visibility="invisible"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
-                <LinearLayout
-                    android:id="@+id/llTittle"
+                <ImageView
+                    android:id="@+id/imagePosterMovie"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:contentDescription="@android:string/untitled"
+                    android:scaleType="centerCrop"
+                    tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+                <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:layout_margin="8dp"
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        app:srcCompat="@android:drawable/btn_star_big_on" />
-
-                    <TextView
-                        android:id="@+id/rateText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center_horizontal|center_vertical"
-                        android:gravity="center_horizontal|center_vertical"
-                        android:text="@string/dummy_rate_9_9"
-                        android:textAlignment="center"
-                        android:textColor="@color/colorPrimary"
-                        android:textSize="28sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/titleText"
+                    <LinearLayout
+                        android:id="@+id/llTittle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:inputType="textShortMessage|textMultiLine"
-                        android:text="@android:string/untitled"
-                        android:textAlignment="textStart"
-                        android:textSize="28sp"
-                        android:textStyle="bold"
-                        tools:ignore="TextViewEdits" />
+                        android:orientation="horizontal">
 
-                </LinearLayout>
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:contentDescription="@android:string/untitled"
+                            app:srcCompat="@android:drawable/btn_star_big_on" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@+id/llTittle">
+                        <TextView
+                            android:id="@+id/rateText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center_horizontal|center_vertical"
+                            android:gravity="center_horizontal|center_vertical"
+                            android:text="@string/dummy_rate_9_9"
+                            android:textAlignment="center"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="28sp"
+                            android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/fixLanguageText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/language"
-                        android:textAlignment="viewEnd"
-                        android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/titleText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:inputType="textShortMessage|textMultiLine"
+                            android:text="@android:string/untitled"
+                            android:textAlignment="textStart"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            tools:ignore="TextViewEdits" />
 
-                    <TextView
-                        android:id="@+id/languageText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@android:string/untitled" />
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/fixRelaseDateText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@string/release_date"
-                        android:textAlignment="viewEnd"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/releaseDateText"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:text="@android:string/untitled" />
-                </LinearLayout>
-            </RelativeLayout>
+                        android:layout_below="@+id/llTittle">
 
-        </LinearLayout>
+                        <TextView
+                            android:id="@+id/fixLanguageText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="@string/language"
+                            android:textAlignment="viewEnd"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/languageText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="@android:string/untitled" />
+
+                        <TextView
+                            android:id="@+id/fixRelaseDateText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="@string/release_date"
+                            android:textAlignment="viewEnd"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/releaseDateText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="@android:string/untitled" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 </layout>

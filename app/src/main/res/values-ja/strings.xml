@@ -1,17 +1,17 @@
 <resources>
-    <string name="app_name">提出モジュール2</string>
+    <string name="app_name">提出モジュール3</string>
     <string name="title_activity_scrolling">スクロールアクティビティ</string>
     <string name="action_settings">設定</string>
     <string name="vote">投票 :</string>
     <string name="type">タイプ :</string>
     <string name="overview">概要 :</string>
-    <string name="release_at">でリリース :</string>
     <string name="movie">映画</string>
     <string name="tv_show">テレビ番組</string>
     <string name="rate">割合 :</string>
     <string name="dummy_rate_9_9">9.9</string>
     <string name="language">言語 :</string>
     <string name="release_date">発売日 :</string>
+    <string name="release_at">発売日 :</string>
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="lang_code">ja</string>

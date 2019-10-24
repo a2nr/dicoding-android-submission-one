@@ -6,14 +6,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
-import android.widget.TextView
-import androidx.core.view.marginTop
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
@@ -26,8 +24,15 @@ import io.github.a2nr.submissionmodul1.viewModel.ListMovieViewModel
 class ItemMovieAdapter(
     private var context: Context
 ) : RecyclerView.Adapter<ItemMovieAdapter.ViewHolder>() {
-    private var md: List<MovieData>? =null
+
+    private var md: List<MovieData>? = null
     private var callBack: ((v: View, p: Int) -> Unit)? = null
+    private val imageReq = Glide.with(this.context)
+        .asDrawable()
+        .error(R.drawable.ic_warning_48px)
+        .fitCenter()
+        .skipMemoryCache(true)
+        .diskCacheStrategy(DiskCacheStrategy.NONE)
 
     fun submitData(m: List<MovieData>): ItemMovieAdapter {
         md = m
@@ -44,6 +49,7 @@ class ItemMovieAdapter(
         return ViewHolder(binding).set(callBack)
     }
 
+
     override fun getItemCount(): Int {
         return md.let {
             if (it.isNullOrEmpty())
@@ -53,14 +59,24 @@ class ItemMovieAdapter(
         }
     }
 
+    override fun onViewAttachedToWindow(holder: ViewHolder) {
+        Log.i("onViewAttached","Holder number${holder.pos.toString()}")
+        super.onViewAttachedToWindow(holder)
+    }
+    override fun onViewRecycled(holder: ViewHolder) {
+        Log.i("onViewRecycled","Holder number${holder.pos.toString()}")
+        super.onViewRecycled(holder)
+    }
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.at(position).bind()
     }
 
-    inner class ViewHolder(private val binding: ItemMovieBinding) : RecyclerView.ViewHolder(binding.root) {
-        private var pos: Int = 0
+    inner class ViewHolder(private val binding: ItemMovieBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        var pos: Int = 0
         private var onClickListener: View.OnClickListener
         private var onClick: ((v: View, p: Int) -> Unit)? = null
+        private val imageListener = ImageListener()
 
         init {
             onClickListener = View.OnClickListener {
@@ -69,28 +85,54 @@ class ItemMovieAdapter(
             binding.layoutClickable.setOnClickListener(onClickListener)
         }
 
+
         fun set(clickCallback: ((v: View, p: Int) -> Unit)?): ViewHolder {
             onClick = clickCallback
             return this
         }
 
-        fun at(potition: Int): ViewHolder {
-            this.pos = potition
+        fun at(position: Int): ViewHolder {
+            this.pos = position
             return this
         }
 
+        inner class ImageListener : RequestListener<Drawable>{
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                Log.e("ImageListener","failed !!")
+                return false
+            }
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                binding.layoutClickable.visibility = LinearLayout.VISIBLE
+                binding.progressBar.visibility = ProgressBar.INVISIBLE
+                return false
+            }
+
+        }
+
         fun bind(): View {
-            //.md object selalu ada instance nya. lihat ListMovieFragment:70 dan file ini line 47
-            val md = this@ItemMovieAdapter.md!![this.pos]
-            binding.titleText.text = md.title
-            binding.languageText.text = md.original_language
-            binding.rateText.text = md.vote_average.toString()
-            binding.releaseDateText.text = md.release_date
-            Glide.with(this@ItemMovieAdapter.context)
-                .load(ListMovieViewModel.getLinkImage(md.backdrop_path))
-                .placeholder(R.drawable.ic_warning_48px)
-                .fitCenter()
-                .into(binding.imagePosterMovie)
+            this@ItemMovieAdapter.md?.let {
+                val movieData = it[this@ViewHolder.pos]
+                binding.titleText.text = movieData.title
+                binding.languageText.text = movieData.original_language
+                binding.rateText.text = movieData.vote_average.toString()
+                binding.releaseDateText.text = movieData.release_date
+                imageReq.load(ListMovieViewModel.getLinkImage(movieData.backdrop_path))
+                    .listener(imageListener)
+                    .into(binding.imagePosterMovie)
+
+            }
             return binding.root
         }
 

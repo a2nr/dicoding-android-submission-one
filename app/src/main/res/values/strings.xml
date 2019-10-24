@@ -1,17 +1,17 @@
 <resources>
-    <string name="app_name">Sub Mission Modul 2</string>
+    <string name="app_name">Sub Mission Modul 3</string>
     <string name="title_activity_scrolling">ScrollingActivity</string>
     <string name="action_settings">Settings</string>
     <string name="vote">Vote :</string>
     <string name="type">Type :</string>
     <string name="overview">Overview :</string>
-    <string name="release_at">Release at :</string>
     <string name="movie">Movie</string>
     <string name="tv_show">TV Show</string>
     <string name="rate">Rate :</string>
     <string name="dummy_rate_9_9">9.9</string>
     <string name="language">Language :</string>
-    <string name="release_date">Release Date :</string>
+    <string name="release_date">Release :</string>
+    <string name="release_at">Release :</string>
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="lang_code">en</string>
