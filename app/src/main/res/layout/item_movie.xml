@@ -19,6 +19,7 @@
                 style="?android:attr/progressBarStyle"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/layout_clickable"
                 app:layout_constraintStart_toStartOf="@+id/layout_clickable"
@@ -38,7 +39,7 @@
 
                 <ImageView
                     android:id="@+id/imagePosterMovie"
-                    android:layout_width="match_parent"
+                    android:layout_width="300dp"
                     android:layout_height="200dp"
                     android:contentDescription="@android:string/untitled"
                     android:scaleType="centerCrop"

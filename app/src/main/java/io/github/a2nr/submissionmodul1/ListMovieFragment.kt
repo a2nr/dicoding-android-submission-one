@@ -21,8 +21,8 @@ import com.google.android.material.tabs.TabLayout
 import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
 import io.github.a2nr.submissionmodul1.databinding.FragmentListMovieBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewModel.AppViewModelFactory
-import io.github.a2nr.submissionmodul1.viewModel.ListMovieViewModel
+import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
+import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
 
 class ListMovieFragment : Fragment() {
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
@@ -130,19 +130,19 @@ class ListMovieFragment : Fragment() {
                 ) {
                     if (pos == 1)
                         top = margin
-                    left = margin
                 } else {
                     if ((pos == 1) ||
                         (pos == 2)
                     )
                         top = margin
 
-                    if ((pos % 2) == 0)
-                        left = 0
-                    else
-                        left = margin
+//                    if ((pos % 2) == 0)
+//                        left = 0
+//                    else
+//                        left = margin
                 }
 
+                left = margin
                 right = margin
                 bottom = margin
 

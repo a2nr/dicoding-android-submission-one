@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1.viewModel
+package io.github.a2nr.submissionmodul1.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.ViewModel

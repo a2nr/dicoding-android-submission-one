@@ -18,7 +18,7 @@ import com.bumptech.glide.request.target.Target
 import io.github.a2nr.submissionmodul1.R
 import io.github.a2nr.submissionmodul1.databinding.ItemMovieBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewModel.ListMovieViewModel
+import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
 
 
 class ItemMovieAdapter(
@@ -31,8 +31,7 @@ class ItemMovieAdapter(
         .asDrawable()
         .error(R.drawable.ic_warning_48px)
         .fitCenter()
-        .skipMemoryCache(true)
-        .diskCacheStrategy(DiskCacheStrategy.NONE)
+        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
 
     fun submitData(m: List<MovieData>): ItemMovieAdapter {
         md = m

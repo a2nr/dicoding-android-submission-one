@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import io.github.a2nr.submissionmodul1.databinding.FragmentMovieDetailBinding
-import io.github.a2nr.submissionmodul1.viewModel.ListMovieViewModel
+import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
 
 class DetailMovieFragment : Fragment(){
     override fun onCreateView(
