@@ -2,18 +2,24 @@ package io.github.a2nr.submissionmodul1.repository
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-class MovieData(
-    var vote_average: Float = 0f,
-    var title: String = "",
-    var release_date: String = "",
-    var original_language: String = "",
-    var backdrop_path: String = "",
-    var overview: String = "",
-    var poster_path: String = "",
-    var media_type: String = ""
+@Entity(tableName = "movie")
+data class MovieData(
+    @PrimaryKey(autoGenerate = true)            var id: Int = 0,
+    @ColumnInfo(name = "vote_average")          var vote_average: Float = 0f,
+    @ColumnInfo(name = "title")                 var title: String = "",
+    @ColumnInfo(name = "release_date")          var release_date: String = "",
+    @ColumnInfo(name = "original_language")     var original_language: String = "",
+    @ColumnInfo(name = "backdrop_path")         var backdrop_path: String = "",
+    @ColumnInfo(name = "overview")              var overview: String = "",
+    @ColumnInfo(name = "poster_path")           var poster_path: String = "",
+    @ColumnInfo(name = "media_type")            var media_type: String = ""
 ) : Parcelable {
     constructor(source: Parcel) : this(
+        source.readInt(),
         source.readFloat(),
         source.readString()!!,
         source.readString()!!,
@@ -27,6 +33,7 @@ class MovieData(
     override fun describeContents() = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
+        writeInt(id)
         writeFloat(vote_average)
         writeString(title)
         writeString(release_date)

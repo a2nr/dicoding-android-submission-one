@@ -29,6 +29,7 @@ class ListMovieFragment : Fragment() {
     private lateinit var lMd: List<MovieData>
     private lateinit var vM: ListMovieViewModel
     private lateinit var binding: FragmentListMovieBinding
+    private lateinit var typeMenu: MenuItem
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,10 +38,6 @@ class ListMovieFragment : Fragment() {
 
         super.onCreateView(inflater, container, savedInstanceState)
         binding = FragmentListMovieBinding.inflate(inflater, container, false)
-
-        val tab = binding.tabs
-        val listenerTab = this.TabListener()
-        tab.addOnTabSelectedListener(listenerTab)
 
         (this.activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
 
@@ -52,9 +49,8 @@ class ListMovieFragment : Fragment() {
             )
         }
 
-
-        val vmf = AppViewModelFactory(this.requireActivity().application)
-        vM = ViewModelProviders.of(this, vmf).get(ListMovieViewModel::class.java)
+        vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
+            .get(ListMovieViewModel::class.java)
         binding.lifecycleOwner = this
         val adapter = ItemMovieAdapter(this.requireContext())
         onClickItemView = { view, pos ->
@@ -84,7 +80,7 @@ class ListMovieFragment : Fragment() {
             }
             lMd = it
         })
-        listenerTab.selectType(resources.getString(R.string.movie))
+
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -135,13 +131,7 @@ class ListMovieFragment : Fragment() {
                         (pos == 2)
                     )
                         top = margin
-
-//                    if ((pos % 2) == 0)
-//                        left = 0
-//                    else
-//                        left = margin
                 }
-
                 left = margin
                 right = margin
                 bottom = margin
@@ -153,52 +143,44 @@ class ListMovieFragment : Fragment() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
+        typeMenu = menu.findItem(R.id.type_menu)
+        when (vM.typeTag) {
+            null -> vM.typeTag = R.id.type_movie
+        }
+        vM.typeTag?.let {
+            menu.performIdentifierAction(it, 0)
+            it
+        }
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.change_lang -> {
-                val inten = Intent(Settings.ACTION_LOCALE_SETTINGS)
-                startActivity(inten)
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
-
-    inner class TabListener : TabLayout.OnTabSelectedListener {
-        fun selectType(s: String) {
-            when (s) {
-                resources.getString(R.string.movie) -> {
-                    vM.fetchMovieData(
+        return let {
+            when (item.itemId) {
+                R.id.change_lang -> {
+                    startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS))
+                }
+                R.id.type_movie -> {
+                    typeMenu.title = item.title
+                    vM.doGetMovies(
                         ListMovieViewModel.MOVIE
                         , "day", resources.getString(R.string.lang_code)
                     )
                 }
-                resources.getString(R.string.tv_show) -> {
-                    vM.fetchMovieData(
+                R.id.type_tv_show -> {
+                    typeMenu.title = item.title
+                    vM.doGetMovies(
                         ListMovieViewModel.TV
                         , "day", resources.getString(R.string.lang_code)
                     )
                 }
+                R.id.type_my_favorite ->{
+                    typeMenu.title= item.title
+                    vM.doGetFavorite()
+                }
             }
+            true
         }
-
-        override fun onTabReselected(p0: TabLayout.Tab?) {
-            Log.i("TabListener", "onTabReselected...")
-        }
-
-        override fun onTabUnselected(p0: TabLayout.Tab?) {
-            Log.i("TabListener", "onTabUnselected...")
-        }
-
-        override fun onTabSelected(p0: TabLayout.Tab?) {
-            Log.i("TabListener", "onTabSelected...")
-            selectType(p0?.text.toString())
-        }
-
-
     }
 
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Sub Missi Modul 3</string>
+    <string name="app_name">SMM 3</string>
     <string name="title_activity_scrolling">Aktifitas penggulungan</string>
     <string name="action_settings">Pengaturan</string>
     <string name="vote">Voting :</string>
@@ -15,4 +15,5 @@
     <string name="tab_text_1">Tab 1</string>
     <string name="tab_text_2">Tab 2</string>
     <string name="lang_code">id</string>
+    <string name="favorite">Favorit</string>
 </resources>
