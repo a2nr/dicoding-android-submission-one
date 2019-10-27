@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "movie")
 data class MovieData(
-    @PrimaryKey(autoGenerate = true)            var id: Int = 0,
+    @PrimaryKey                                 var id: Int = -1,
     @ColumnInfo(name = "vote_average")          var vote_average: Float = 0f,
     @ColumnInfo(name = "title")                 var title: String = "",
     @ColumnInfo(name = "release_date")          var release_date: String = "",

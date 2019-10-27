@@ -26,6 +26,7 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
     private val client = OkHttpClient()
 
     val mutMovieData = MutableLiveData<List<MovieData>>()
+    val mutIdExists = MutableLiveData<Boolean>()
 
     fun storeMovie(movieData: MovieData) {
         repoCoroutine.launch {
@@ -35,7 +36,25 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
         }
     }
 
-    fun getMoviesStorage() {
+    fun removeMovie(movieData: MovieData) {
+        repoCoroutine.launch {
+            withContext(Dispatchers.IO) {
+                movieDao.delete(movieData)
+            }
+        }
+    }
+
+    fun doCheckIsMovieExists(key : Int){
+        repoCoroutine.launch {
+            mutIdExists.value = withContext(Dispatchers.IO) {
+                val i = movieDao.getIdfromId(key)
+                Log.i("doCheckIsMovieExists","$i :: $key ==> ${i == key}")
+                i == key
+            }
+        }
+    }
+
+    fun doGetMoviesStorage() {
         repoCoroutine.launch {
             mutMovieData.value = withContext(Dispatchers.IO) {
                 movieDao.getAll()
@@ -43,7 +62,7 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
         }
     }
 
-    fun getMovies(media_type: String, time_window: String, language: String) {
+    fun doGetMovies(media_type: String, time_window: String, language: String) {
         repoCoroutine.launch {
             fetchMovies(media_type, time_window, language)
                 ?.let {
@@ -149,6 +168,12 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
                                 o.getString(this)
                             else
                                 "????"
+                        }
+                        this.id = "id".run {
+                            if (o.has(this))
+                                o.getInt(this)
+                            else
+                                -1
                         }
                     }
                 }

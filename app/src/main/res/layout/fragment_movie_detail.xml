@@ -5,6 +5,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="io.github.a2nr.submissionmodul1.DetailMovieFragment">
 
+    <data>
+        <variable
+            name="detailMovieFragment"
+            type="io.github.a2nr.submissionmodul1.DetailMovieFragment" />
+
+    </data>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
 
         android:layout_width="match_parent"
@@ -31,6 +38,7 @@
                     android:id="@+id/posterImageView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@android:string/untitled"
 
                     android:scaleType="centerInside"
                     app:layout_collapseMode="parallax"
@@ -67,6 +75,7 @@
                     android:textAllCaps="false"
                     android:textSize="24sp"
                     android:textStyle="bold"
+                    android:layout_marginTop="32dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -131,7 +140,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/release_fix"
                     app:layout_constraintTop_toTopOf="@+id/release_fix" />
-                    android:textAlignment="viewStart" />
                 <TextView
                     android:id="@+id/overview_fix"
                     android:layout_width="80dp"
@@ -160,6 +168,19 @@
                 </ScrollView>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.core.widget.NestedScrollView>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:onClick="@{()->detailMovieFragment.fabOnClick()}"
+            android:id="@+id/floatingActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/ic_favorite_border_24px"
+            android:tint="#000000"
+            app:layout_anchor="@id/appbar"
+            app:layout_anchorGravity="bottom|end" />
 
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

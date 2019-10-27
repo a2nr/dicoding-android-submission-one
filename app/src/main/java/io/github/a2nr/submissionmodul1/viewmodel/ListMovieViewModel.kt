@@ -27,14 +27,23 @@ class ListMovieViewModel(
     val listMovieData: LiveData<List<MovieData>>
         get() = repo.mutMovieData
 
+    val isMovieExists: LiveData<Boolean>
+        get() = repo.mutIdExists
+
     var typeTag: Int? = null
     fun doGetMovies(media_type: String, time_window: String, language: String) {
-        repo.getMovies(media_type,time_window,language)
+        repo.doGetMovies(media_type,time_window,language)
     }
     fun markAsFavorite(movieData: MovieData){
         repo.storeMovie(movieData)
     }
+    fun unmarkAsFavorite(movieData: MovieData){
+        repo.removeMovie(movieData)
+    }
     fun doGetFavorite(){
-        repo.getMoviesStorage()
+        repo.doGetMoviesStorage()
+    }
+    fun doCheckMovieExists(key: Int){
+        repo.doCheckIsMovieExists(key)
     }
 }
