@@ -48,15 +48,7 @@ class ItemMovieAdapter(
         return ViewHolder(binding).set(callBack)
     }
 
-
-    override fun getItemCount(): Int {
-        return md.let {
-            if (it.isNullOrEmpty())
-                0
-            else
-                it.size
-        }
-    }
+    override fun getItemCount(): Int = md?.size ?:0
 
     override fun onViewAttachedToWindow(holder: ViewHolder) {
         Log.i("onViewAttached","Holder number${holder.pos.toString()}")
@@ -103,6 +95,8 @@ class ItemMovieAdapter(
                 isFirstResource: Boolean
             ): Boolean {
                 Log.e("ImageListener","failed !!")
+                binding.layoutClickable.visibility = LinearLayout.VISIBLE
+                binding.progressBar.visibility = ProgressBar.INVISIBLE
                 return false
             }
 

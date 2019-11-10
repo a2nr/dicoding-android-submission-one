@@ -12,11 +12,15 @@ import org.json.JSONObject
 
 class MovieDataRepository(private val movieDao: MovieDataAccess) {
     companion object {
-        private const val LINK_TRENDING: String = "https://api.themoviedb.org/3/trending"
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
         const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
         fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri {
-            return "$LINK_TRENDING/$media_type/$time_window?api_key=$API_KEY&language=$language".toUri()
+            return ("https://api.themoviedb.org/3/trending/" +
+                    "$media_type/$time_window?api_key=$API_KEY&language=$language").toUri()
+        }
+        fun getLinkSearchMovie(media_type: String,queryTittle: String,language: String): Uri {
+            return ("https://api.themoviedb.org/3/search/" +
+                    "$media_type?api_key=$API_KEY&language=$language&query=$queryTittle").toUri()
         }
 
     }
@@ -71,15 +75,34 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
         }
     }
 
+    fun doSearchMovies(media_type: String, queryTittle: String, language: String) {
+        repoCoroutine.launch {
+            fetchSearch(media_type,queryTittle,language)
+                ?.let{
+                    mutMovieData.value = it
+                }
+        }
+
+    }
+
     private suspend fun fetchMovies(media_type: String, time_window: String, language: String)
             : List<MovieData>? {
+        return fetchData(getLinkTrendingMovie(media_type, time_window, language))
+    }
+    private suspend fun fetchSearch(media_type: String, queryTittle: String, language: String)
+            : List<MovieData>? {
+        return fetchData(getLinkSearchMovie(media_type,queryTittle,language))
+
+    }
+
+    private suspend fun fetchData(uri: Uri): List<MovieData>?{
 
         /* pull data from server, wait until done */
         val tmpString = withContext(Dispatchers.IO) {
             "".run {
                 /* Will be connect to server to pull data using API */
                 val req = Request.Builder()
-                    .url(getLinkTrendingMovie(media_type, time_window, language).toString())
+                    .url(uri.toString())
                     .build()
                 try {
                     val response = client.newCall(req).execute()
@@ -120,31 +143,31 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
                                     return@run o.getString(it)
                                 }
                             }
-                            "????"
+                            "unknown"
                         }
                         this.backdrop_path = "backdrop_path".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
-                                "????"
+                                "unknown"
                         }
                         this.original_language = "original_language".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
-                                "????"
+                                "unknown"
                         }
                         this.media_type = "media_type".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
-                                "????"
+                                "unknown"
                         }
                         this.overview = "overview".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
-                                "????"
+                                "unknown"
                         }
                         /* in .js the 'release_date'    tag for movie category,
                          *            'first_air_date'  tag for tv category
@@ -155,7 +178,7 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
                                     return@run o.getString(it)
                                 }
                             }
-                            "????"
+                            "unknown"
                         }
                         this.vote_average = "vote_average".run {
                             if (o.has(this))
@@ -167,7 +190,7 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
                             if (o.has(this))
                                 o.getString(this)
                             else
-                                "????"
+                                "unknown"
                         }
                         this.id = "id".run {
                             if (o.has(this))
@@ -186,5 +209,4 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
         }
         return md
     }
-
 }

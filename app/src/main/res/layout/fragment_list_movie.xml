@@ -19,29 +19,8 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                app:layout_scrollFlags="scroll|enterAlways">
+                app:layout_scrollFlags="scroll|enterAlways"/>
 
-            </androidx.appcompat.widget.Toolbar>
-
-<!--            <com.google.android.material.tabs.TabLayout-->
-<!--                android:id="@+id/tabs"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-
-<!--                app:tabMode="scrollable">-->
-
-<!--                <com.google.android.material.tabs.TabItem-->
-<!--                    android:id="@+id/TabItemMovie"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/movie" />-->
-
-<!--                <com.google.android.material.tabs.TabItem-->
-<!--                    android:id="@+id/TabItemTvShow"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:text="@string/tv_show" />-->
-<!--            </com.google.android.material.tabs.TabLayout>-->
         </com.google.android.material.appbar.AppBarLayout>
 
         <androidx.core.widget.NestedScrollView

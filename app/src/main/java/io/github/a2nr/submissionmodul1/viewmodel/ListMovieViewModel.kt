@@ -34,6 +34,9 @@ class ListMovieViewModel(
     fun doGetMovies(media_type: String, time_window: String, language: String) {
         repo.doGetMovies(media_type,time_window,language)
     }
+    fun doSearchMovie(media_type: String, queryTitle: String, language: String){
+        repo.doSearchMovies(media_type,queryTitle,language)
+    }
     fun markAsFavorite(movieData: MovieData){
         repo.storeMovie(movieData)
     }

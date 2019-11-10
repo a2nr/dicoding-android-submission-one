@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.*
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -17,7 +18,6 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.tabs.TabLayout
 import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
 import io.github.a2nr.submissionmodul1.databinding.FragmentListMovieBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
@@ -151,6 +151,32 @@ class ListMovieFragment : Fragment() {
             menu.performIdentifierAction(it, 0)
             it
         }
+        (menu.findItem(R.id.search).actionView as SearchView)
+            .setOnQueryTextListener(object :
+            SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                Log.i("onQueryTextSubmit", "triggered?")
+                query?.apply {
+                    var media_type = ListMovieViewModel.MOVIE
+
+                    when(vM.typeTag){
+                        R.id.type_tv_show -> {media_type =ListMovieViewModel.TV}
+                    }
+
+                    vM.doSearchMovie(
+                        media_type,
+                        query,
+                        resources.getString(R.string.lang_code)
+                    )
+                }
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                Log.i("onQueryTextChange", "triggered?")
+                return true
+            }
+        })
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -174,8 +200,8 @@ class ListMovieFragment : Fragment() {
                         , "day", resources.getString(R.string.lang_code)
                     )
                 }
-                R.id.type_my_favorite ->{
-                    typeMenu.title= item.title
+                R.id.type_my_favorite -> {
+                    typeMenu.title = item.title
                     vM.doGetFavorite()
                 }
             }

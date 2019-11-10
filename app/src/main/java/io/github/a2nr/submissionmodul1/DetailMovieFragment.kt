@@ -11,6 +11,11 @@ import io.github.a2nr.submissionmodul1.databinding.FragmentMovieDetailBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
 import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import android.appwidget.AppWidgetManager
+import android.content.ComponentName
+import android.content.Intent
+
+
 
 class DetailMovieFragment : Fragment() {
     private lateinit var vM: ListMovieViewModel
@@ -45,11 +50,22 @@ class DetailMovieFragment : Fragment() {
         binding.detailMovieFragment = this
         return binding.root
     }
-    private fun updateFabIcon(){
+
+    private fun updateFabIcon() {
         if (isFavorite) {
-            binding.floatingActionButton.setImageDrawable(this.resources.getDrawable(R.drawable.ic_favorite_24px,this.requireContext().theme))
+            binding.floatingActionButton.setImageDrawable(
+                this.resources.getDrawable(
+                    R.drawable.ic_favorite_24px,
+                    this.requireContext().theme
+                )
+            )
         } else {
-            binding.floatingActionButton.setImageDrawable(this.resources.getDrawable(R.drawable.ic_favorite_border_24px,this.requireContext().theme))
+            binding.floatingActionButton.setImageDrawable(
+                this.resources.getDrawable(
+                    R.drawable.ic_favorite_border_24px,
+                    this.requireContext().theme
+                )
+            )
         }
         binding.floatingActionButton.hide()
         binding.floatingActionButton.show()
@@ -65,14 +81,15 @@ class DetailMovieFragment : Fragment() {
         } else {
             vM.markAsFavorite(movieData)
         }
-        isFavorite=!isFavorite
+        isFavorite = !isFavorite
         updateFabIcon()
-        Snackbar
-            .make(
-                requireView(),
-                "${movieData.title} $s into favorite",
-                Snackbar.LENGTH_SHORT
-            )
+
+        StackImageAppWidgetProvider.sendRefresh(this.requireContext())
+
+        Snackbar.make(
+            requireView(), "${movieData.title} $s into favorite",
+            Snackbar.LENGTH_SHORT
+        )
             .show()
     }
 }

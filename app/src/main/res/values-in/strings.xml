@@ -16,4 +16,10 @@
     <string name="tab_text_2">Tab 2</string>
     <string name="lang_code">id</string>
     <string name="favorite">Favorit</string>
+    <string name="search">Cari</string>
+    <string name="appwidget_text">CONTOH</string>
+    <string name="add_widget">Add widget</string>
+    <string name="no_data">Tidak Ada Data</string>
+    <string name="favorite_movie">Film Favorit</string>
+    <string name="empty_text">Tidak Ada Data</string>
 </resources>

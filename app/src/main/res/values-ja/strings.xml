@@ -16,4 +16,10 @@
     <string name="tab_text_2">Tab 2</string>
     <string name="lang_code">ja</string>
     <string name="favorite">お気に入り</string>
+    <string name="search">調べる</string>
+    <string name="appwidget_text">例</string>
+    <string name="add_widget">Add widget</string>
+    <string name="no_data">データなし</string>
+    <string name="favorite_movie">お気に入りの映画</string>
+    <string name="empty_text">データなし</string>
 </resources>

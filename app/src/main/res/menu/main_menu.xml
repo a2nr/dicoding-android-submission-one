@@ -18,6 +18,12 @@
         </menu>
     </item>
     <item
+        android:id="@+id/search"
+        android:icon="@drawable/ic_search_24px"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom" />
+    <item
         android:id="@+id/change_lang"
         android:title="@string/language"
         app:showAsAction="never" />
