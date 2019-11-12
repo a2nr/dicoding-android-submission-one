@@ -13,6 +13,9 @@
         <action
             android:id="@+id/action_listMovieFragment_to_detailMovieFragment"
             app:destination="@id/detailMovieFragment" />
+        <action
+            android:id="@+id/action_listMovieFragment_to_settingFragment"
+            app:destination="@id/settingFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailMovieFragment"
@@ -24,6 +27,14 @@
             app:argType="io.github.a2nr.submissionmodul1.repository.MovieData" />
         <action
             android:id="@+id/action_detailMovieFragment_to_listMovieFragment"
+            app:destination="@id/listMovieFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingFragment"
+        android:name="io.github.a2nr.submissionmodul1.SettingFragment"
+        android:label="SettingFragment" >
+        <action
+            android:id="@+id/action_settingFragment_to_listMovieFragment"
             app:destination="@id/listMovieFragment" />
     </fragment>
 </navigation>

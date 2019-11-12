@@ -16,7 +16,6 @@ import android.content.ComponentName
 import android.content.Intent
 
 
-
 class DetailMovieFragment : Fragment() {
     private lateinit var vM: ListMovieViewModel
     private lateinit var movieData: MovieData
@@ -28,68 +27,62 @@ class DetailMovieFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         super.onCreateView(inflater, container, savedInstanceState)
-        vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
-            .get(ListMovieViewModel::class.java)
-        binding = FragmentMovieDetailBinding.inflate(inflater, container, false)
-        movieData = DetailMovieFragmentArgs.fromBundle(arguments!!).dataDetail
-        binding.mediaType.text = movieData.media_type
-        binding.overview.text = movieData.overview
-        binding.releaseDate.text = movieData.release_date
-        binding.titleTextView.text = movieData.title
-        binding.voteAverage.text = movieData.vote_average.toString()
-        Glide.with(this)
-            .load(ListMovieViewModel.getLinkImage(movieData.poster_path))
-            .into(binding.posterImageView)
-        vM.isMovieExists.observe(this, Observer {
-            isFavorite = it
-            updateFabIcon()
-        })
-        binding.floatingActionButton.hide()
-        binding.floatingActionButton.show()
-        vM.doCheckMovieExists(movieData.id)
-        binding.detailMovieFragment = this
-        return binding.root
+        return FragmentMovieDetailBinding.inflate(inflater, container, false).apply {
+            binding = this
+            detailMovieFragment = this@DetailMovieFragment
+            movieData = DetailMovieFragmentArgs.fromBundle(arguments!!).dataDetail.also {
+                mediaType.text = it.media_type
+                overview.text = it.overview
+                releaseDate.text = it.release_date
+                titleTextView.text = it.title
+                voteAverage.text = it.vote_average.toString()
+                Glide.with(this@DetailMovieFragment)
+                    .load(ListMovieViewModel.getLinkImage(it.poster_path))
+                    .into(this.posterImageView)
+            }
+            vM = ViewModelProviders.of(
+                this@DetailMovieFragment,
+                AppViewModelFactory(this@DetailMovieFragment.requireActivity().application)
+            )
+                .get(ListMovieViewModel::class.java).apply {
+                    isMovieExists.observe(this@DetailMovieFragment, Observer {
+                        isFavorite = it
+                        updateFabIcon()
+                    })
+                }
+            floatingActionButton.run { hide();show() }
+            vM.doCheckMovieExists(movieData.id)
+        }.root
     }
 
     private fun updateFabIcon() {
-        if (isFavorite) {
-            binding.floatingActionButton.setImageDrawable(
+        binding.floatingActionButton.run {
+            setImageDrawable(
                 this.resources.getDrawable(
-                    R.drawable.ic_favorite_24px,
-                    this.requireContext().theme
+                    if (isFavorite) R.drawable.ic_favorite_24px else R.drawable.ic_favorite_border_24px,
+                    this@DetailMovieFragment.requireContext().theme
                 )
             )
-        } else {
-            binding.floatingActionButton.setImageDrawable(
-                this.resources.getDrawable(
-                    R.drawable.ic_favorite_border_24px,
-                    this.requireContext().theme
-                )
-            )
+            hide(); show()
         }
-        binding.floatingActionButton.hide()
-        binding.floatingActionButton.show()
 
     }
 
     fun fabOnClick() {
-        var s = "Added"
 
-        if (isFavorite) {
-            vM.unmarkAsFavorite(movieData)
-            s = "Removed"
-        } else {
-            vM.markAsFavorite(movieData)
+        vM.run {
+            if (isFavorite) unmarkAsFavorite(movieData) else markAsFavorite(movieData)
         }
-        isFavorite = !isFavorite
-        updateFabIcon()
-
-        StackImageAppWidgetProvider.sendRefresh(this.requireContext())
-
         Snackbar.make(
-            requireView(), "${movieData.title} $s into favorite",
+            requireView(),
+            "${movieData.title} ${if (isFavorite) "Removed" else "Added"} into favorite"
+            ,
             Snackbar.LENGTH_SHORT
         )
             .show()
+        isFavorite = !isFavorite
+        updateFabIcon()
+        StackImageAppWidgetProvider.sendRefresh(this.requireContext())
+
     }
 }

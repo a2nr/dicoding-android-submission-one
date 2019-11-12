@@ -27,4 +27,8 @@
         android:id="@+id/change_lang"
         android:title="@string/language"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/setting"
+        android:title="@string/setting"
+        app:showAsAction="never"/>
 </menu>

@@ -22,4 +22,12 @@
     <string name="no_data">Tidak Ada Data</string>
     <string name="favorite_movie">Film Favorit</string>
     <string name="empty_text">Tidak Ada Data</string>
+    <string name="Remainder_Release">Remainder Release</string>
+    <string name="summary_release">Dengan mengaktifkan setting ini, user akan diberikan notifikasi ketika terdapat peluncuran film hari ini.</string>
+    <string name="Daily_Remainder">Daily Remainder</string>
+    <string name="summary_daily_remainder">Apabila setting ini diaktifkan maka user akan diberikan notifikasi untuk membuka katalog film setiap jam 7 pagi</string>
+    <string name="setting">Setting</string>
+    <string name="Notification_title_setting">Notification Settings</string>
+    <string name="key_setting_remaind_release">remind_release</string>
+    <string name="key_setting_remaind_daily">daily_remainder</string>
 </resources>

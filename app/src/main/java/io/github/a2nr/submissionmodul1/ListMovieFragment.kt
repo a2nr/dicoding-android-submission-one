@@ -37,75 +37,89 @@ class ListMovieFragment : Fragment() {
     ): View? {
 
         super.onCreateView(inflater, container, savedInstanceState)
-        binding = FragmentListMovieBinding.inflate(inflater, container, false)
 
-        (this.activity as AppCompatActivity).setSupportActionBar(binding.toolbar)
 
-        val navCon = this.view?.findNavController()
-        navCon?.let {
+        this.view?.findNavController()?.let{
             NavigationUI.setupActionBarWithNavController(
-                this.requireActivity() as AppCompatActivity
-                , it
+                this@ListMovieFragment.requireActivity() as AppCompatActivity
+                ,it
             )
         }
 
-        vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
-            .get(ListMovieViewModel::class.java)
-        binding.lifecycleOwner = this
-        val adapter = ItemMovieAdapter(this.requireContext())
-        onClickItemView = { view, pos ->
-            Log.i("ListMovieFragment", "Item Clicked at $pos")
-            view.findNavController()
-                .navigate(
-                    ListMovieFragmentDirections
-                        .actionListMovieFragmentToDetailMovieFragment(lMd[pos])
-                )
-        }
-
-        val itemDecoration =
-            ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt())
-        binding.listMovie.addItemDecoration(itemDecoration)
-        when (this.resources.configuration.orientation) {
-            Configuration.ORIENTATION_PORTRAIT ->
-                binding.listMovie.layoutManager = LinearLayoutManager(this.requireContext())
-            Configuration.ORIENTATION_LANDSCAPE ->
-                binding.listMovie.layoutManager = GridLayoutManager(this.requireContext(), 2)
-        }
-        vM.listMovieData.observe(this, Observer {
-            binding.listMovie.visibility = RecyclerView.VISIBLE
-            binding.progressBar.visibility = ProgressBar.INVISIBLE
-            binding.listMovie.adapter = adapter.apply {
-                this.setCallBack(onClickItemView)
-                this.submitData(it)
+        binding = FragmentListMovieBinding.inflate(inflater, container, false).apply {
+            lifecycleOwner = this@ListMovieFragment
+            (this@ListMovieFragment.activity as AppCompatActivity)
+                .setSupportActionBar(toolbar)
+            listMovie.apply {
+                addItemDecoration(ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt()))
+                layoutManager = run {
+                    when (this.resources.configuration.orientation) {
+                        Configuration.ORIENTATION_PORTRAIT ->
+                            LinearLayoutManager(this@ListMovieFragment.requireContext())
+                        //Configuration.ORIENTATION_LANDSCAPE
+                        else ->
+                            GridLayoutManager(this@ListMovieFragment.requireContext(), 2)
+                    }
+                }
             }
-            lMd = it
-        })
-
+        }
+        vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
+            .get(ListMovieViewModel::class.java).apply {
+                listMovieData.observe(this@ListMovieFragment,
+                    Observer {
+                        binding.apply {
+                            listMovie.visibility = RecyclerView.VISIBLE
+                            progressBar.visibility = ProgressBar.INVISIBLE
+                            onClickItemView = { view, pos ->
+                                Log.i("ListMovieFragment", "Item Clicked at $pos")
+                                view.findNavController().navigate(
+                                    ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
+                                        lMd[pos]
+                                    )
+                                )
+                            }
+                            listMovie.adapter =
+                                ItemMovieAdapter(this@ListMovieFragment.requireContext())
+                                    .apply {
+                                        setCallBack(onClickItemView)
+                                        submitData(it)
+                                    }
+                        }
+                        lMd = it
+                    })
+            }
         setHasOptionsMenu(true)
         return binding.root
     }
 
     override fun onResume() {
         if (!vM.listMovieData.value.isNullOrEmpty()) {
-            binding.listMovie.visibility = RecyclerView.VISIBLE
-            binding.progressBar.visibility = ProgressBar.INVISIBLE
+            binding.apply {
+                listMovie.visibility = RecyclerView.VISIBLE
+                progressBar.visibility = ProgressBar.INVISIBLE
+            }
         }
         super.onResume()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        when (newConfig.orientation) {
-            Configuration.ORIENTATION_LANDSCAPE ->
-                binding.listMovie.layoutManager = GridLayoutManager(this.requireContext(), 2)
-            Configuration.ORIENTATION_PORTRAIT ->
-                binding.listMovie.layoutManager = LinearLayoutManager(this.requireContext())
+        binding.listMovie.layoutManager = run {
+            when (newConfig.orientation) {
+                Configuration.ORIENTATION_LANDSCAPE ->
+                    GridLayoutManager(this@ListMovieFragment.requireContext(), 2)
+                // Configuration.ORIENTATION_PORTRAIT
+                else ->
+                    LinearLayoutManager(this@ListMovieFragment.requireContext())
+            }
         }
     }
 
     override fun onPause() {
-        binding.progressBar.visibility = ProgressBar.VISIBLE
-        binding.listMovie.visibility = RecyclerView.INVISIBLE
+        binding.apply {
+            progressBar.visibility = ProgressBar.VISIBLE
+            listMovie.visibility = RecyclerView.INVISIBLE
+        }
         super.onPause()
     }
 
@@ -119,18 +133,12 @@ class ListMovieFragment : Fragment() {
         ) {
             with(outRect) {
                 val pos = parent.getChildAdapterPosition(view) + 1
-                if (this@ListMovieFragment
-                        .resources
-                        .configuration
-                        .orientation == Configuration.ORIENTATION_PORTRAIT
+                if (this@ListMovieFragment.resources.configuration.orientation
+                    == Configuration.ORIENTATION_PORTRAIT
                 ) {
-                    if (pos == 1)
-                        top = margin
+                    if (pos == 1) top = margin
                 } else {
-                    if ((pos == 1) ||
-                        (pos == 2)
-                    )
-                        top = margin
+                    if ((pos == 1) || (pos == 2)) top = margin
                 }
                 left = margin
                 right = margin
@@ -153,36 +161,40 @@ class ListMovieFragment : Fragment() {
         }
         (menu.findItem(R.id.search).actionView as SearchView)
             .setOnQueryTextListener(object :
-            SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                Log.i("onQueryTextSubmit", "triggered?")
-                query?.apply {
-                    var media_type = ListMovieViewModel.MOVIE
-
-                    when(vM.typeTag){
-                        R.id.type_tv_show -> {media_type =ListMovieViewModel.TV}
+                SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String?): Boolean {
+                    Log.i("onQueryTextSubmit", "triggered?")
+                    query?.apply {
+                        vM.doSearchMovie(
+                            run {
+                                when (vM.typeTag) {
+                                    R.id.type_tv_show -> ListMovieViewModel.TV
+                                    else -> ListMovieViewModel.MOVIE
+                                }
+                            },
+                            query, resources.getString(R.string.lang_code)
+                        )
                     }
-
-                    vM.doSearchMovie(
-                        media_type,
-                        query,
-                        resources.getString(R.string.lang_code)
-                    )
+                    return true
                 }
-                return true
-            }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                Log.i("onQueryTextChange", "triggered?")
-                return true
-            }
-        })
+                override fun onQueryTextChange(newText: String?): Boolean {
+                    Log.i("onQueryTextChange", "triggered?")
+                    return true
+                }
+            })
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return let {
             when (item.itemId) {
+                R.id.setting -> {
+                    this.view?.findNavController()?.navigate(
+                        ListMovieFragmentDirections
+                            .actionListMovieFragmentToSettingFragment()
+                    )
+                }
                 R.id.change_lang -> {
                     startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS))
                 }

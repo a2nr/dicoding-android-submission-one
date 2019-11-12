@@ -14,14 +14,16 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
     companion object {
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
         const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
-        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri {
-            return ("https://api.themoviedb.org/3/trending/" +
+        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri
+            = ("https://api.themoviedb.org/3/trending/" +
                     "$media_type/$time_window?api_key=$API_KEY&language=$language").toUri()
-        }
-        fun getLinkSearchMovie(media_type: String,queryTittle: String,language: String): Uri {
-            return ("https://api.themoviedb.org/3/search/" +
+        fun getLinkSearchMovie(media_type: String,queryTittle: String,language: String): Uri
+            = ("https://api.themoviedb.org/3/search/" +
                     "$media_type?api_key=$API_KEY&language=$language&query=$queryTittle").toUri()
-        }
+        fun getLinkReleaseToday(date : String) : Uri
+            = ("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY" +
+                "&primary_release_date.gte=$date" +
+                "&primary_release_date.lte=$date").toUri()
 
     }
 
@@ -68,7 +70,7 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
 
     fun doGetMovies(media_type: String, time_window: String, language: String) {
         repoCoroutine.launch {
-            fetchMovies(media_type, time_window, language)
+            fetchData(getLinkTrendingMovie(media_type, time_window, language))
                 ?.let {
                     mutMovieData.value = it
                 }
@@ -77,22 +79,20 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
 
     fun doSearchMovies(media_type: String, queryTittle: String, language: String) {
         repoCoroutine.launch {
-            fetchSearch(media_type,queryTittle,language)
+            fetchData(getLinkSearchMovie(media_type,queryTittle,language))
                 ?.let{
                     mutMovieData.value = it
                 }
         }
 
     }
-
-    private suspend fun fetchMovies(media_type: String, time_window: String, language: String)
-            : List<MovieData>? {
-        return fetchData(getLinkTrendingMovie(media_type, time_window, language))
-    }
-    private suspend fun fetchSearch(media_type: String, queryTittle: String, language: String)
-            : List<MovieData>? {
-        return fetchData(getLinkSearchMovie(media_type,queryTittle,language))
-
+    fun doGetReleaseMovie(date: String){
+        repoCoroutine.launch {
+            fetchData(getLinkReleaseToday(date))
+                ?.let {
+                    mutMovieData.value = it
+                }
+        }
     }
 
     private suspend fun fetchData(uri: Uri): List<MovieData>?{

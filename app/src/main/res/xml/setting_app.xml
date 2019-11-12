@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/Notification_title_setting">
+
+        <SwitchPreferenceCompat
+            app:key="@string/key_setting_remaind_release"
+            app:summary="@string/summary_release"
+            app:title="@string/Remainder_Release" />
+
+        <SwitchPreferenceCompat
+            app:key="@string/key_setting_remaind_daily"
+            app:summary="@string/summary_daily_remainder"
+            app:title="@string/Daily_Remainder" />
+
+    </PreferenceCategory>
+</PreferenceScreen>
