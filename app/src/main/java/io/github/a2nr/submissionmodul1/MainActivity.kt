@@ -17,18 +17,18 @@ class MainActivity : AppCompatActivity() {
 
         ViewModelProviders.of(this, AppViewModelFactory(this.application))
             .get(ListMovieViewModel::class.java).apply {
-            releaseToday.observe(this@MainActivity,
-                Observer {
-                    AlarmReceiver.createRemainderRelease(this@MainActivity, it)
-                })
-            doGetReleaseMovie(
-                SimpleDateFormat(
-                    "yyyy-MM-dd",
-                    Locale.getDefault()
-                ).format(Calendar.getInstance().time)
-            )
-        }
+                releaseToday.observe(this@MainActivity,
+                    Observer {
+                        AlarmReceiver.createRemainderRelease(this@MainActivity, it)
+                    })
+                doGetReleaseMovie(
+                    SimpleDateFormat(
+                        "yyyy-MM-dd",
+                        Locale.getDefault()
+                    ).format(Calendar.getInstance().time)
+                )
 
+            }
         AlarmReceiver.createRemainderDaily(this)
     }
 }

@@ -15,6 +15,11 @@
             <item
                 android:id="@+id/type_my_favorite"
                 android:title="@string/favorite" />
+            <item
+                android:id="@+id/type_release_now"
+                android:title="@string/release_now"
+                android:visible="false"
+                />
         </menu>
     </item>
     <item

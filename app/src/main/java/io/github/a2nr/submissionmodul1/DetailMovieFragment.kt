@@ -1,7 +1,9 @@
 package io.github.a2nr.submissionmodul1
 
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -11,9 +13,6 @@ import io.github.a2nr.submissionmodul1.databinding.FragmentMovieDetailBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
 import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
-import android.appwidget.AppWidgetManager
-import android.content.ComponentName
-import android.content.Intent
 
 
 class DetailMovieFragment : Fragment() {

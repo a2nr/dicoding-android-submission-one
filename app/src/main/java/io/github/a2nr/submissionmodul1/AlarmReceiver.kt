@@ -19,8 +19,8 @@ import java.util.*
 class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
-        const val PENDING_REMAINDER_DAILY_CODE = 101
-        const val PENDING_REMAINDER_RELEASE_CODE = 100
+        const val PENDING_REMAINDER_DAILY_CODE = 1
+        const val PENDING_REMAINDER_RELEASE_CODE = 2
         const val EXTRA_TITLE = "TITLE_MOVIE"
         const val TYPE_REMAINDER = "TYPE_REMAINDER"
         const val TYPE_REMAINDER_RELEASE = "TYPE_RELEASE"
@@ -38,34 +38,42 @@ class AlarmReceiver : BroadcastReceiver() {
                         )
                     ) {
                         if ((!isAlarmSet(_context, TYPE_REMAINDER_RELEASE))) {
-                            (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
-                                .apply {
-                                    val intent = Intent(_context, AlarmReceiver::class.java)
-                                        .apply {
-                                            putExtra(TYPE_REMAINDER, TYPE_REMAINDER_RELEASE)
-                                            putExtra(EXTRA_TITLE, Array(releaseMovie.size) {
-                                                releaseMovie[it].title
-                                            })
-                                        }
-                                    PendingIntent.getBroadcast(
-                                        _context,
-                                        PENDING_REMAINDER_RELEASE_CODE,
-                                        intent,
-                                        0
-                                    )
-                                        .let { pending ->
-                                            this@apply.setInexactRepeating(
-                                                AlarmManager.RTC_WAKEUP,
-                                                Calendar.getInstance()
-                                                    .apply {
-                                                        set(Calendar.HOUR_OF_DAY, HOUR_RELEASE)
-                                                        set(Calendar.MINUTE, MINUTE_RELEASE)
-                                                        set(Calendar.SECOND, 0)
-                                                    }.timeInMillis, AlarmManager.INTERVAL_DAY,
-                                                pending
-                                            )
-                                        }
+                            val alarmManager =
+                                (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+
+                            val cal = Calendar.getInstance()
+                            if (it.getBoolean("tombol_1", false)) {
+                                Log.i(
+                                    "[DEBUG 1]",
+                                    "Akan muncul notif setelah 1 Menit dari sekarang"
+                                )
+                                cal.apply {
+                                    val second = get(Calendar.SECOND)
+                                    set(Calendar.SECOND, second + 5)
                                 }
+                            } else {
+                                cal.apply {
+                                    set(Calendar.HOUR_OF_DAY, HOUR_RELEASE)
+                                    set(Calendar.MINUTE, MINUTE_RELEASE)
+                                    set(Calendar.SECOND, 0)
+                                }
+                            }
+
+                            alarmManager.setInexactRepeating(
+                                AlarmManager.RTC_WAKEUP,
+                                cal.timeInMillis, AlarmManager.INTERVAL_DAY,
+                                PendingIntent.getBroadcast(
+                                    _context, PENDING_REMAINDER_RELEASE_CODE,
+                                    Intent(_context, AlarmReceiver::class.java).apply {
+                                        putExtra(TYPE_REMAINDER, TYPE_REMAINDER_RELEASE)
+                                        val s = Array(5) {
+                                            releaseMovie[it].title
+                                        }
+                                        putExtra(EXTRA_TITLE, s)
+                                    }, 0
+                                )
+                            )
+
                             Log.i("createRemainderRelease", "created")
                         } else {
                             Log.i("createRemainderRelease", "Already Created")
@@ -90,32 +98,44 @@ class AlarmReceiver : BroadcastReceiver() {
                             false
                         )
                     ) {
-                        if (!isAlarmSet(_context, TYPE_REMAINDER_RELEASE)) {
-                            (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+                        if (!isAlarmSet(_context, TYPE_REMAINDER_DAILY)) {
+                            val alarmManager =
+                                (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
+                            val intent = Intent(_context, AlarmReceiver::class.java)
                                 .apply {
-                                    val intent = Intent(_context, AlarmReceiver::class.java)
-                                        .apply {
-                                            putExtra(TYPE_REMAINDER, TYPE_REMAINDER_DAILY)
-                                        }
-                                    PendingIntent.getBroadcast(
-                                        _context,
-                                        PENDING_REMAINDER_DAILY_CODE,
-                                        intent,
-                                        0
-                                    )
-                                        .let { pending ->
-                                            this@apply.setInexactRepeating(
-                                                AlarmManager.RTC_WAKEUP,
-                                                Calendar.getInstance()
-                                                    .apply {
-                                                        set(Calendar.HOUR_OF_DAY, HOUR_DAILY)
-                                                        set(Calendar.MINUTE, MINUTE_DAILY)
-                                                        set(Calendar.SECOND, 0)
-                                                    }.timeInMillis, AlarmManager.INTERVAL_DAY,
-                                                pending
-                                            )
-                                        }
+                                    putExtra(TYPE_REMAINDER, TYPE_REMAINDER_DAILY)
                                 }
+                            val pending = PendingIntent.getBroadcast(
+                                _context,
+                                PENDING_REMAINDER_DAILY_CODE,
+                                intent,
+                                0
+                            )
+                            val cal = Calendar.getInstance()
+
+                            if (it.getBoolean("tombol_1", false)) {
+                                Log.i(
+                                    "[DEBUG 1]",
+                                    "Akan muncul notif setelah 1 Menit dari sekarang"
+                                )
+                                cal.apply {
+                                    val second = get(Calendar.SECOND)
+                                    set(Calendar.SECOND, second + 5)
+                                }
+                            } else {
+                                cal.apply {
+                                    set(Calendar.HOUR_OF_DAY, HOUR_DAILY)
+                                    set(Calendar.MINUTE, MINUTE_DAILY)
+                                    set(Calendar.SECOND, 0)
+                                }
+
+                            }
+                            alarmManager.setInexactRepeating(
+                                AlarmManager.RTC_WAKEUP,
+                                cal.timeInMillis
+                                , AlarmManager.INTERVAL_DAY,
+                                pending
+                            )
                             Log.i("createRemainderDaily", "created")
                         } else {
                             Log.i("createRemainderDaily", "Already Created")
@@ -135,8 +155,9 @@ class AlarmReceiver : BroadcastReceiver() {
         private fun showAlarmNotification(
             context: Context,
             title: String,
-            message: String,
-            notifId: Int
+            message: Array<String>,
+            notifId: Int,
+            intent: Intent?
         ) {
 
             val CHANNEL_ID = "Channel_1"
@@ -147,11 +168,18 @@ class AlarmReceiver : BroadcastReceiver() {
             val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
             val builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_favorite_24px)
-                .setContentTitle(title)
-                .setContentText(message)
                 .setColor(ContextCompat.getColor(context, android.R.color.transparent))
                 .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000))
                 .setSound(alarmSound)
+            intent?.let {
+                builder.setContentIntent(
+                    PendingIntent
+                        .getActivity(
+                            context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT
+                        )
+                )
+            }
+
 
             /*
             Untuk android Oreo ke atas perlu menambahkan notification channel
@@ -173,10 +201,20 @@ class AlarmReceiver : BroadcastReceiver() {
 
                 notificationManagerCompat.createNotificationChannel(channel)
             }
+            val s = message.let { _message ->
+                var ss = ""
+                _message.forEach {
+                    ss += "-$it\r\n"
+                }
+                ss
+            }
 
-            val notification = builder.build()
-
-            notificationManagerCompat.notify(notifId, notification)
+            notificationManagerCompat.notify(
+                notifId + (Date().time / 1000L % Integer.MAX_VALUE).toInt()
+                , builder.setContentTitle(title)
+                    .setContentText(s)
+                    .build()
+            )
 
         }
 
@@ -209,15 +247,17 @@ class AlarmReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
+        val notifIntent = Intent(context, MainActivity::class.java)
+        notifIntent.flags =
+            Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         intent.getStringExtra(TYPE_REMAINDER)?.let { _type ->
             when (_type) {
                 TYPE_REMAINDER_RELEASE -> {
-                    intent.getStringExtra(EXTRA_TITLE)?.let {
+                    intent.getStringArrayExtra(EXTRA_TITLE)?.let {
+                        notifIntent.action = ListMovieFragment.NOTIFICATION_FEEDBACK
                         showAlarmNotification(
-                            context,
-                            "Release Today",
-                            it,
-                            PENDING_REMAINDER_RELEASE_CODE
+                            context, "Release Today", it, PENDING_REMAINDER_RELEASE_CODE
+                            , notifIntent
                         )
                     }
                 }
@@ -225,8 +265,8 @@ class AlarmReceiver : BroadcastReceiver() {
                     showAlarmNotification(
                         context,
                         "Daily Remainder",
-                        "Explore Movie Now!!",
-                        PENDING_REMAINDER_DAILY_CODE
+                        Array(1) { "Explore Movie Now!!" },
+                        PENDING_REMAINDER_DAILY_CODE, notifIntent
                     )
                 }
                 else -> {

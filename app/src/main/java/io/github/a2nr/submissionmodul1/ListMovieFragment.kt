@@ -23,46 +23,20 @@ import io.github.a2nr.submissionmodul1.databinding.FragmentListMovieBinding
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
 import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import java.text.SimpleDateFormat
+import java.util.*
 
 class ListMovieFragment : Fragment() {
+    companion object {
+        const val NOTIFICATION_FEEDBACK = "ListMovieFragment.NOTIFICATION"
+    }
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
     private lateinit var lMd: List<MovieData>
     private lateinit var vM: ListMovieViewModel
     private lateinit var binding: FragmentListMovieBinding
     private lateinit var typeMenu: MenuItem
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
 
-        super.onCreateView(inflater, container, savedInstanceState)
-
-
-        this.view?.findNavController()?.let{
-            NavigationUI.setupActionBarWithNavController(
-                this@ListMovieFragment.requireActivity() as AppCompatActivity
-                ,it
-            )
-        }
-
-        binding = FragmentListMovieBinding.inflate(inflater, container, false).apply {
-            lifecycleOwner = this@ListMovieFragment
-            (this@ListMovieFragment.activity as AppCompatActivity)
-                .setSupportActionBar(toolbar)
-            listMovie.apply {
-                addItemDecoration(ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt()))
-                layoutManager = run {
-                    when (this.resources.configuration.orientation) {
-                        Configuration.ORIENTATION_PORTRAIT ->
-                            LinearLayoutManager(this@ListMovieFragment.requireContext())
-                        //Configuration.ORIENTATION_LANDSCAPE
-                        else ->
-                            GridLayoutManager(this@ListMovieFragment.requireContext(), 2)
-                    }
-                }
-            }
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
         vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
             .get(ListMovieViewModel::class.java).apply {
                 listMovieData.observe(this@ListMovieFragment,
@@ -87,7 +61,50 @@ class ListMovieFragment : Fragment() {
                         }
                         lMd = it
                     })
+                this@ListMovieFragment.activity?.intent?.let {
+                    if (it.action == NOTIFICATION_FEEDBACK) {
+                        typeTag = R.id.type_release_now
+                    }
+                }
             }
+
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        super.onCreateView(inflater, container, savedInstanceState)
+
+
+        this.view?.findNavController()?.let {
+            NavigationUI.setupActionBarWithNavController(
+                this@ListMovieFragment.requireActivity() as AppCompatActivity
+                , it
+            )
+        }
+
+        binding = FragmentListMovieBinding.inflate(inflater, container, false).apply {
+            lifecycleOwner = this@ListMovieFragment
+            (this@ListMovieFragment.activity as AppCompatActivity)
+                .setSupportActionBar(toolbar)
+            listMovie.apply {
+                addItemDecoration(ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt()))
+                layoutManager = run {
+                    when (this.resources.configuration.orientation) {
+                        Configuration.ORIENTATION_PORTRAIT ->
+                            LinearLayoutManager(this@ListMovieFragment.requireContext())
+                        //Configuration.ORIENTATION_LANDSCAPE
+                        else ->
+                            GridLayoutManager(this@ListMovieFragment.requireContext(), 2)
+                    }
+                }
+            }
+        }
+
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -200,6 +217,7 @@ class ListMovieFragment : Fragment() {
                 }
                 R.id.type_movie -> {
                     typeMenu.title = item.title
+                    vM.typeTag = R.id.type_movie
                     vM.doGetMovies(
                         ListMovieViewModel.MOVIE
                         , "day", resources.getString(R.string.lang_code)
@@ -207,6 +225,7 @@ class ListMovieFragment : Fragment() {
                 }
                 R.id.type_tv_show -> {
                     typeMenu.title = item.title
+                    vM.typeTag = R.id.type_tv_show
                     vM.doGetMovies(
                         ListMovieViewModel.TV
                         , "day", resources.getString(R.string.lang_code)
@@ -214,7 +233,17 @@ class ListMovieFragment : Fragment() {
                 }
                 R.id.type_my_favorite -> {
                     typeMenu.title = item.title
+                    vM.typeTag = R.id.type_my_favorite
                     vM.doGetFavorite()
+                }
+                R.id.type_release_now -> {
+                    typeMenu.title = item.title
+                    vM.doGetReleaseMovie(
+                        SimpleDateFormat(
+                            "yyyy-MM-dd",
+                            Locale.getDefault()
+                        ).format(Calendar.getInstance().time)
+                    )
                 }
             }
             true
