@@ -1,5 +1,6 @@
 package io.github.a2nr.submissionmodul1.repository
 
+import android.database.Cursor
 import androidx.room.*
 
 @Dao
@@ -10,9 +11,12 @@ interface MovieDataAccess{
     @Delete
     fun delete(movieData: MovieData)
 
-    @Query("SELECT id FROM movie WHERE id = :key")
+    @Query("SELECT id FROM "+MovieData.NAME+" WHERE id = :key")
     fun getIdfromId(key : Int) : Int?
 
-    @Query("SELECT * FROM movie")
+    @Query("SELECT * FROM "+MovieData.NAME)
     fun getAll() : List<MovieData>
+
+    @Query("SELECT * FROM "+MovieData.NAME)
+    fun getAllCursor() : Cursor?
 }

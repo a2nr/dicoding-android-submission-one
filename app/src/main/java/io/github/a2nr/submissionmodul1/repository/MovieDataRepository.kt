@@ -10,7 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class MovieDataRepository(private val movieDao: MovieDataAccess) {
+class MovieDataRepository(val movieDao: MovieDataAccess) {
     companion object {
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
         const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
@@ -88,11 +88,12 @@ class MovieDataRepository(private val movieDao: MovieDataAccess) {
     }
     fun doGetReleaseMovie(date: String){
         repoCoroutine.launch {
-            fetchData(getLinkReleaseToday(date))
-                ?.let {
-                    mutMovieData.value = it
-                }
+            mutMovieData.value = getReleaseMovie(date)
         }
+    }
+
+    suspend fun getReleaseMovie(date:String) : List<MovieData>? {
+        return fetchData(getLinkReleaseToday(date))
     }
 
     private suspend fun fetchData(uri: Uri): List<MovieData>?{

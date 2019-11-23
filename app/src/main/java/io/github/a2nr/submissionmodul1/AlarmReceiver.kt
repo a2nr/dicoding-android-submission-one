@@ -12,8 +12,12 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import io.github.a2nr.submissionmodul1.repository.MovieData
+import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
+import io.github.a2nr.submissionmodul1.repository.MovieDatabase
 import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -245,9 +249,22 @@ class AlarmReceiver : BroadcastReceiver() {
 
     }
 
+//    class MovieReleaseReceiver(context: Context, observer: Observer<List<MovieData>>) {
+//        private val repo : MovieDataRepository
+//        val data : LiveData<List<MovieData>>
+//            get() = repo.mutMovieData
+//        init {
+//            repo = MovieDataRepository(MovieDatabase.getInstance(context).movieDao())
+//            data.observeForever(observer)
+//        }
+//    }
     override fun onReceive(context: Context, intent: Intent) {
         // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         val notifIntent = Intent(context, MainActivity::class.java)
+//        val obs = Observer<List<MovieData>>({
+//
+//        })
+//        val movieRelease = MovieReleaseReceiver(context,obs)
         notifIntent.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         intent.getStringExtra(TYPE_REMAINDER)?.let { _type ->
@@ -277,5 +294,6 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
 }
+
 
 

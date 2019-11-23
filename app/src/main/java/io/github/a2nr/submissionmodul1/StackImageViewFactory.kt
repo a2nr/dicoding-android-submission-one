@@ -3,21 +3,27 @@ package io.github.a2nr.submissionmodul1
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.util.Log
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
+import io.github.a2nr.submissionmodul1.repository.MovieData
+import io.github.a2nr.submissionmodul1.repository.MovieDataProvider
 import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
-import io.github.a2nr.submissionmodul1.repository.MovieDatabase
 
 internal class StackImageViewFactory(
     private val context: Context
 ) :
     RemoteViewsService.RemoteViewsFactory {
     private val widgetImage = ArrayList<Bitmap>()
-    private val dao = MovieDatabase.getInstance(context).movieDao()
+    private val content = Uri.Builder().scheme(MovieDataProvider.SCHEME)
+        .authority(MovieDataProvider.AUTHORITY)
+        .appendPath(MovieData.NAME)
+        .build()
+    private lateinit var uriFav: Uri
 
     override fun onCreate() {
     }
@@ -27,25 +33,41 @@ internal class StackImageViewFactory(
 
     override fun onDataSetChanged() {
         widgetImage.clear()
-        dao.getAll().let {
-            it.forEach {
-                Glide.with(context.applicationContext).asBitmap().fitCenter().override(110, 150)
-                    .load(MovieDataRepository.LINK_IMAGE + it.poster_path)
-                    .into(object : CustomTarget<Bitmap>() {
-                        override fun onLoadCleared(placeholder: Drawable?) {
-                            Log.i("onLoadCleared", " images cleared ?")
-                        }
 
-                        override fun onResourceReady(
-                            resource: Bitmap,
-                            transition: Transition<in Bitmap>?
-                        ) {
-                            widgetImage.add(resource)
-                        }
-                    })
+        uriFav = Uri.parse(content.toString())
+        context.contentResolver.let { contentResolver ->
+            val cr = contentResolver.query(
+                uriFav,
+                arrayOf(MovieData.TITLE, MovieData.POSTER_PATH),
+                null, null, null)
+            cr?.run {
+                this.moveToFirst()
+                for (i in 1..this.count) {
+                    var isDone = false
+                    val index = this.getColumnIndexOrThrow(MovieData.POSTER_PATH)
+                    val path = this.getString(index)
+                    Glide.with(context.applicationContext)
+                        .asBitmap().fitCenter().override(110, 150)
+                        .load(MovieDataRepository.LINK_IMAGE + path)
+                        .into(object : CustomTarget<Bitmap>() {
+                            override fun onLoadCleared(placeholder: Drawable?) {
+                                Log.i("onLoadCleared", " images cleared ?")
+                            }
+
+                            override fun onResourceReady(
+                                resource: Bitmap,
+                                transition: Transition<in Bitmap>?
+                            ) {
+                                widgetImage.add(resource)
+                                isDone = true
+                            }
+                        })
+                    while (!isDone)
+                        Thread.sleep(100)
+                    this.moveToNext()
+                }
             }
-            while (widgetImage.size != it.size)
-                Thread.sleep(100)
+            cr?.close()
         }
     }
 
