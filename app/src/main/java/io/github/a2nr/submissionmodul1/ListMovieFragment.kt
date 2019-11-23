@@ -232,9 +232,9 @@ class ListMovieFragment : Fragment() {
                     )
                 }
                 R.id.type_my_favorite -> {
-                    typeMenu.title = item.title
-                    vM.typeTag = R.id.type_my_favorite
-                    vM.doGetFavorite()
+                    this.startActivity(
+                        Intent(this.requireContext(),FavoriteActivity::class.java)
+                    )
                 }
                 R.id.type_release_now -> {
                     typeMenu.title = item.title
