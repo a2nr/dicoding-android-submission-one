@@ -30,6 +30,7 @@ class ListMovieFragment : Fragment() {
     companion object {
         const val NOTIFICATION_FEEDBACK = "ListMovieFragment.NOTIFICATION"
     }
+
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
     private lateinit var lMd: List<MovieData>
     private lateinit var vM: ListMovieViewModel
@@ -38,36 +39,12 @@ class ListMovieFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
-            .get(ListMovieViewModel::class.java).apply {
-                listMovieData.observe(this@ListMovieFragment,
-                    Observer {
-                        binding.apply {
-                            listMovie.visibility = RecyclerView.VISIBLE
-                            progressBar.visibility = ProgressBar.INVISIBLE
-                            onClickItemView = { view, pos ->
-                                Log.i("ListMovieFragment", "Item Clicked at $pos")
-                                view.findNavController().navigate(
-                                    ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
-                                        lMd[pos]
-                                    )
-                                )
-                            }
-                            listMovie.adapter =
-                                ItemMovieAdapter(this@ListMovieFragment.requireContext())
-                                    .apply {
-                                        setCallBack(onClickItemView)
-                                        submitData(it)
-                                    }
-                        }
-                        lMd = it
-                    })
-                this@ListMovieFragment.activity?.intent?.let {
-                    if (it.action == NOTIFICATION_FEEDBACK) {
-                        typeTag = R.id.type_release_now
-                    }
-                }
+            .get(ListMovieViewModel::class.java)
+        this.activity?.intent?.let {
+            if (it.action == NOTIFICATION_FEEDBACK) {
+                vM.typeTag = R.id.type_release_now
             }
-
+        }
         super.onCreate(savedInstanceState)
     }
 
@@ -104,7 +81,28 @@ class ListMovieFragment : Fragment() {
                 }
             }
         }
-
+        val obs = Observer<List<MovieData>> {
+            binding.apply {
+                listMovie.visibility = RecyclerView.VISIBLE
+                progressBar.visibility = ProgressBar.INVISIBLE
+                onClickItemView = { view, pos ->
+                    Log.i("ListMovieFragment", "Item Clicked at $pos")
+                    view.findNavController().navigate(
+                        ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
+                            lMd[pos]
+                        )
+                    )
+                }
+                listMovie.adapter =
+                    ItemMovieAdapter(this@ListMovieFragment.requireContext())
+                        .apply {
+                            setCallBack(onClickItemView)
+                            submitData(it)
+                        }
+            }
+            lMd = it
+        }
+        vM.listMovieData.observe(this,obs)
         setHasOptionsMenu(true)
         return binding.root
     }
@@ -233,7 +231,7 @@ class ListMovieFragment : Fragment() {
                 }
                 R.id.type_my_favorite -> {
                     this.startActivity(
-                        Intent(this.requireContext(),FavoriteActivity::class.java)
+                        Intent(this.requireContext(), FavoriteActivity::class.java)
                     )
                 }
                 R.id.type_release_now -> {

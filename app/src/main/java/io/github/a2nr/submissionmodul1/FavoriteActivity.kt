@@ -1,15 +1,23 @@
 package io.github.a2nr.submissionmodul1
 
+import android.content.res.Configuration
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
-import com.google.android.material.snackbar.Snackbar
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import io.github.a2nr.submissionmodul1.repository.MovieDataProvider
+import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
 import kotlinx.android.synthetic.main.activity_favorite.*
 import kotlinx.coroutines.*
 
@@ -20,16 +28,94 @@ class FavoriteActivity : AppCompatActivity() {
     private val muteListMovieData = MutableLiveData<List<MovieData>>()
     private val ldListMovieData: LiveData<List<MovieData>>
         get() = muteListMovieData
+    private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
+    companion object {
+        val NAME_FAV = "My Favorite"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_favorite)
         setSupportActionBar(toolbar)
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+        title = ""
+        ldListMovieData.observe(this, Observer {
+            this.listFavoriteMovie.apply {
+                addItemDecoration(
+                    ItemDecoration(
+                        resources
+                            .getDimension(R.dimen.activity_horizontal_margin).toInt()
+                    )
+                )
+                layoutManager = run {
+                    when (this.resources.configuration.orientation) {
+                        Configuration.ORIENTATION_PORTRAIT ->
+                            LinearLayoutManager(this@FavoriteActivity)
+                        //Configuration.ORIENTATION_LANDSCAPE
+                        else ->
+                            GridLayoutManager(this@FavoriteActivity, 2)
+                    }
+                }
+                onClickItemView = { view, p ->
+                    onClickItem(p)
+                }
+                adapter =
+                    ItemMovieAdapter(this@FavoriteActivity)
+                        .apply {
+                            setCallBack(onClickItemView)
+                            submitData(it)
+                        }
+            }
+            it.forEach { movie ->
+                Log.i("Favorite", movie.toString())
+            }
+        })
+        fab.setOnClickListener {
         }
 
+        this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        this.supportActionBar?.setDisplayShowHomeEnabled(true)
+
+        toolbar.setNavigationOnClickListener {
+            if (layout_list_movie.visibility == View.GONE) {
+                layout_list_movie.visibility = View.VISIBLE
+                layout_detail_movie.visibility = View.GONE
+                posterImageView.visibility = View.GONE
+                toolbar_title.visibility = View.VISIBLE
+            } else {
+                this.finish()
+            }
+        }
+        toolbar_title.text = NAME_FAV
+        getData()
+
+    }
+
+
+    private fun onClickItem(index: Int) {
+        layout_list_movie.apply {
+            val mov = ldListMovieData.value?.get(index)
+            mov?.let {
+                this@FavoriteActivity.apply {
+                    media_type.text = it.media_type
+                    overview.text = it.overview
+                    release_date.text = it.release_date
+                    titleTextView.text = it.title
+                    vote_average.text = it.vote_average.toString()
+
+                    posterImageView.visibility = View.VISIBLE
+                    Glide.with(this)
+                        .load(ListMovieViewModel.getLinkImage(it.poster_path))
+                        .into(posterImageView)
+                    layout_detail_movie.visibility = View.VISIBLE
+                    toolbar_title.visibility = View.INVISIBLE
+
+                }
+                visibility = View.GONE
+            }
+        }
+    }
+
+    private fun getData() {
         val content = Uri.Builder().scheme(MovieDataProvider.SCHEME)
             .authority(MovieDataProvider.AUTHORITY)
             .appendPath(MovieData.NAME)
@@ -64,7 +150,8 @@ class FavoriteActivity : AppCompatActivity() {
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.MEDIA_TYPE))
                             poster_path =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.POSTER_PATH))
-
+                            backdrop_path =
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieData.BACKDROP_PATH))
                             cursor.moveToNext()
                         }
                     }
@@ -73,10 +160,45 @@ class FavoriteActivity : AppCompatActivity() {
                 mov
             }
         }
-        ldListMovieData.observe(this, Observer {
-            it.forEach { movie ->
-                Log.i("Favorite", movie.toString())
+
+    }
+
+    private fun updateFabIcon(boolean: Boolean) {
+        this.fab.run {
+            setImageDrawable(
+                this.resources.getDrawable(
+                    if (boolean) R.drawable.ic_favorite_24px else R.drawable.ic_favorite_border_24px,
+                    this.resources.newTheme()
+                )
+            )
+            hide(); show()
+        }
+
+    }
+
+    inner class ItemDecoration(private val margin: Int) : RecyclerView.ItemDecoration() {
+
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            with(outRect) {
+                val pos = parent.getChildAdapterPosition(view) + 1
+                if (resources.configuration.orientation
+                    == Configuration.ORIENTATION_PORTRAIT
+                ) {
+                    if (pos == 1) top = margin
+                } else {
+                    if ((pos == 1) || (pos == 2)) top = margin
+                }
+                left = margin
+                right = margin
+                bottom = margin
+
             }
-        })
+        }
+
     }
 }
