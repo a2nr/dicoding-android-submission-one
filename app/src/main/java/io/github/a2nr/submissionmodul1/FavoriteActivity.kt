@@ -1,5 +1,7 @@
 package io.github.a2nr.submissionmodul1
 
+import android.content.ContentResolver
+import android.content.ContentUris
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.net.Uri
@@ -20,6 +22,7 @@ import io.github.a2nr.submissionmodul1.repository.MovieDataProvider
 import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
 import kotlinx.android.synthetic.main.activity_favorite.*
 import kotlinx.coroutines.*
+import okhttp3.Dispatcher
 
 class FavoriteActivity : AppCompatActivity() {
 
@@ -29,6 +32,8 @@ class FavoriteActivity : AppCompatActivity() {
     private val ldListMovieData: LiveData<List<MovieData>>
         get() = muteListMovieData
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
+    private var selectedIndex: Int? = null
+
     companion object {
         val NAME_FAV = "My Favorite"
     }
@@ -55,7 +60,7 @@ class FavoriteActivity : AppCompatActivity() {
                             GridLayoutManager(this@FavoriteActivity, 2)
                     }
                 }
-                onClickItemView = { view, p ->
+                onClickItemView = { _, p ->
                     onClickItem(p)
                 }
                 adapter =
@@ -70,6 +75,23 @@ class FavoriteActivity : AppCompatActivity() {
             }
         })
         fab.setOnClickListener {
+            if (selectedIndex != null) {
+                ldListMovieData.value?.get(selectedIndex!!)?.id?.let {
+                    val content = Uri.Builder().scheme(MovieDataProvider.SCHEME)
+                        .authority(MovieDataProvider.AUTHORITY)
+                        .appendPath(MovieData.NAME)
+                        .appendPath(it.toString())
+                        .build()
+                    mainCoroutine.launch {
+                        withContext(Dispatchers.IO) {
+                            contentResolver.delete(content, null, null)
+                            getData()
+                        }
+                    }
+                    updateFabIcon(false)
+                    goToListView()
+                }
+            }
         }
 
         this.supportActionBar?.setDisplayHomeAsUpEnabled(true)
@@ -77,10 +99,7 @@ class FavoriteActivity : AppCompatActivity() {
 
         toolbar.setNavigationOnClickListener {
             if (layout_list_movie.visibility == View.GONE) {
-                layout_list_movie.visibility = View.VISIBLE
-                layout_detail_movie.visibility = View.GONE
-                posterImageView.visibility = View.GONE
-                toolbar_title.visibility = View.VISIBLE
+                goToListView()
             } else {
                 this.finish()
             }
@@ -90,6 +109,13 @@ class FavoriteActivity : AppCompatActivity() {
 
     }
 
+    private fun goToListView() {
+        layout_list_movie.visibility = View.VISIBLE
+        layout_detail_movie.visibility = View.GONE
+        posterImageView.visibility = View.GONE
+        toolbar_title.visibility = View.VISIBLE
+        selectedIndex = null
+    }
 
     private fun onClickItem(index: Int) {
         layout_list_movie.apply {
@@ -108,9 +134,10 @@ class FavoriteActivity : AppCompatActivity() {
                         .into(posterImageView)
                     layout_detail_movie.visibility = View.VISIBLE
                     toolbar_title.visibility = View.INVISIBLE
-
+                    selectedIndex = index
                 }
                 visibility = View.GONE
+                updateFabIcon(true)
             }
         }
     }
@@ -125,6 +152,7 @@ class FavoriteActivity : AppCompatActivity() {
                 val que = contentResolver.query(
                     Uri.parse(content.toString()),
                     arrayOf(
+                        "id",
                         MovieData.VOTE_AVERAGE,
                         MovieData.TITLE,
                         MovieData.RELEASE_DATE,
@@ -139,9 +167,12 @@ class FavoriteActivity : AppCompatActivity() {
                     cursor.moveToFirst()
                     List(cursor.count) {
                         MovieData().apply {
+                            id =
+                                cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                             vote_average =
                                 cursor.getFloat(cursor.getColumnIndexOrThrow(MovieData.VOTE_AVERAGE))
-                            title = cursor.getString(cursor.getColumnIndexOrThrow(MovieData.TITLE))
+                            title =
+                                cursor.getString(cursor.getColumnIndexOrThrow(MovieData.TITLE))
                             release_date =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.RELEASE_DATE))
                             overview =

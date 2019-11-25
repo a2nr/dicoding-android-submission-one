@@ -11,6 +11,9 @@ interface MovieDataAccess{
     @Delete
     fun delete(movieData: MovieData)
 
+    @Query("DELETE from "+MovieData.NAME+" WHERE id = :key")
+    fun delete(key : Int)
+
     @Query("SELECT id FROM "+MovieData.NAME+" WHERE id = :key")
     fun getIdfromId(key : Int) : Int?
 

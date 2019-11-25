@@ -35,8 +35,8 @@ class MovieDataRepository(val movieDao: MovieDataAccess) {
     val mutIdExists = MutableLiveData<Boolean>()
 
     fun storeMovie(movieData: MovieData) {
-        repoCoroutine.launch {
-            withContext(Dispatchers.IO) {
+          repoCoroutine.launch {
+             withContext(Dispatchers.IO) {
                 movieDao.insert(movieData)
             }
         }
@@ -49,6 +49,7 @@ class MovieDataRepository(val movieDao: MovieDataAccess) {
             }
         }
     }
+
 
     fun doCheckIsMovieExists(key : Int){
         repoCoroutine.launch {
