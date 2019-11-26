@@ -19,7 +19,7 @@
         <SwitchPreferenceCompat
             android:title="Debug"
             app:key="tombol_1"
-            app:summary="This button will be trigger the notification above
-            5 second after re activate notification." />
+            app:summary="This button will be immediately trigger the notification above to
+             re activate notification." />
     </PreferenceCategory>
 </PreferenceScreen>

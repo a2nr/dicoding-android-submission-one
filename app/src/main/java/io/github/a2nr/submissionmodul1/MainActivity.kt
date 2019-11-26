@@ -15,20 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        ViewModelProviders.of(this, AppViewModelFactory(this.application))
-            .get(ListMovieViewModel::class.java).apply {
-                releaseToday.observe(this@MainActivity,
-                    Observer {
-                        AlarmReceiver.createRemainderRelease(this@MainActivity, it)
-                    })
-                doGetReleaseMovie(
-                    SimpleDateFormat(
-                        "yyyy-MM-dd",
-                        Locale.getDefault()
-                    ).format(Calendar.getInstance().time)
-                )
-
-            }
+        AlarmReceiver.createRemainderRelease(this)
         AlarmReceiver.createRemainderDaily(this)
     }
 }

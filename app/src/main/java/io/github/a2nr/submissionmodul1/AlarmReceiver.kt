@@ -12,20 +12,22 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
 import io.github.a2nr.submissionmodul1.repository.MovieData
 import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
-import io.github.a2nr.submissionmodul1.repository.MovieDatabase
+import kotlinx.coroutines.*
+import java.text.SimpleDateFormat
 import java.util.*
 
 class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
+        const val DEBUG_TIME = 2
         const val PENDING_REMAINDER_DAILY_CODE = 1
         const val PENDING_REMAINDER_RELEASE_CODE = 2
-        const val EXTRA_TITLE = "TITLE_MOVIE"
         const val TYPE_REMAINDER = "TYPE_REMAINDER"
         const val TYPE_REMAINDER_RELEASE = "TYPE_RELEASE"
         const val MINUTE_RELEASE = 0
@@ -33,7 +35,7 @@ class AlarmReceiver : BroadcastReceiver() {
         const val TYPE_REMAINDER_DAILY = "TYPE_DAILY"
         const val MINUTE_DAILY = 0
         const val HOUR_DAILY = 8
-        fun createRemainderRelease(context: Context?, releaseMovie: List<MovieData>) {
+        fun createRemainderRelease(context: Context?) {
             context?.let { _context ->
                 PreferenceManager.getDefaultSharedPreferences(_context).let { it ->
                     if (it.getBoolean(
@@ -53,7 +55,7 @@ class AlarmReceiver : BroadcastReceiver() {
                                 )
                                 cal.apply {
                                     val second = get(Calendar.SECOND)
-                                    set(Calendar.SECOND, second + 5)
+                                    set(Calendar.SECOND, second + DEBUG_TIME)
                                 }
                             } else {
                                 cal.apply {
@@ -70,10 +72,6 @@ class AlarmReceiver : BroadcastReceiver() {
                                     _context, PENDING_REMAINDER_RELEASE_CODE,
                                     Intent(_context, AlarmReceiver::class.java).apply {
                                         putExtra(TYPE_REMAINDER, TYPE_REMAINDER_RELEASE)
-                                        val s = Array(5) {
-                                            releaseMovie[it].title
-                                        }
-                                        putExtra(EXTRA_TITLE, s)
                                     }, 0
                                 )
                             )
@@ -124,7 +122,7 @@ class AlarmReceiver : BroadcastReceiver() {
                                 )
                                 cal.apply {
                                     val second = get(Calendar.SECOND)
-                                    set(Calendar.SECOND, second + 5)
+                                    set(Calendar.SECOND, second + DEBUG_TIME)
                                 }
                             } else {
                                 cal.apply {
@@ -233,7 +231,7 @@ class AlarmReceiver : BroadcastReceiver() {
             return a
         }
 
-        private fun cancelAlarm(context: Context, type: String) {
+         fun cancelAlarm(context: Context, type: String) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, AlarmReceiver::class.java)
             val requestCode = if (type.equals(
@@ -249,33 +247,46 @@ class AlarmReceiver : BroadcastReceiver() {
 
     }
 
-//    class MovieReleaseReceiver(context: Context, observer: Observer<List<MovieData>>) {
-//        private val repo : MovieDataRepository
-//        val data : LiveData<List<MovieData>>
-//            get() = repo.mutMovieData
-//        init {
-//            repo = MovieDataRepository(MovieDatabase.getInstance(context).movieDao())
-//            data.observeForever(observer)
-//        }
-//    }
+    private val mut = MutableLiveData<List<MovieData>>()
+    private val dat: LiveData<List<MovieData>>
+        get() = mut
+    private val alarmJob = Job()
+    private val alarmCoroutine = CoroutineScope(Dispatchers.Main + alarmJob)
+    private lateinit var str : Array<String>
+
     override fun onReceive(context: Context, intent: Intent) {
-        // This method is called when the BroadcastReceiver is receiving an Intent broadcast.
         val notifIntent = Intent(context, MainActivity::class.java)
-//        val obs = Observer<List<MovieData>>({
-//
-//        })
-//        val movieRelease = MovieReleaseReceiver(context,obs)
         notifIntent.flags =
             Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
         intent.getStringExtra(TYPE_REMAINDER)?.let { _type ->
             when (_type) {
                 TYPE_REMAINDER_RELEASE -> {
-                    intent.getStringArrayExtra(EXTRA_TITLE)?.let {
-                        notifIntent.action = ListMovieFragment.NOTIFICATION_FEEDBACK
+                    val repo = MovieDataRepository(null)
+                    var callObserveRemove :(()->Unit)? =null
+                    val obs = Observer<List<MovieData>> { data ->
+                        str = Array(data.size) {
+                           data[it].title
+                       }
+                        callObserveRemove?.invoke()
                         showAlarmNotification(
-                            context, "Release Today", it, PENDING_REMAINDER_RELEASE_CODE
+                            context, "Release Today", str, PENDING_REMAINDER_RELEASE_CODE
                             , notifIntent
                         )
+                    }
+                    callObserveRemove={
+                        dat.removeObserver(obs)
+                    }
+                    notifIntent.action = ListMovieFragment.NOTIFICATION_FEEDBACK
+                    dat.observeForever(obs)
+                    alarmCoroutine.launch {
+                        mut.value = withContext(Dispatchers.IO) {
+                            repo.getReleaseMovie(
+                                SimpleDateFormat(
+                                    "yyyy-MM-dd",
+                                    Locale.getDefault()
+                                ).format(Calendar.getInstance().time)
+                            )
+                        }
                     }
                 }
                 TYPE_REMAINDER_DAILY -> {

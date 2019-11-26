@@ -17,13 +17,13 @@
         <activity
             android:name=".FavoriteActivity"
             android:label="@string/title_activity_favorite"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <provider
             android:name=".repository.MovieDataProvider"
             android:authorities="io.github.a2nr.smm5"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true" />
 
         <receiver
             android:name=".AlarmReceiver"

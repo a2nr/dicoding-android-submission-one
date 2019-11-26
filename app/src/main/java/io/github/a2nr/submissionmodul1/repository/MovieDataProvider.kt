@@ -24,7 +24,7 @@ class MovieDataProvider : ContentProvider() {
     }
 
     override fun onCreate(): Boolean {
-        return true;
+        return true
     }
 
     override fun query(
@@ -37,7 +37,7 @@ class MovieDataProvider : ContentProvider() {
                     .getInstance(it).movieDao()
             )
             val cursor = when (MATCHER.match(uri)) {
-                FAVORITE -> dao.movieDao.getAllCursor()
+                FAVORITE -> dao.movieDao?.getAllCursor()
                 else -> {
                     Log.e("ContentProvider", "URI not found!")
                     null
@@ -59,7 +59,7 @@ class MovieDataProvider : ContentProvider() {
                 }
 
             }
-            ContentUris.withAppendedId(uri, id);
+            ContentUris.withAppendedId(uri, id)
         }
     }
 

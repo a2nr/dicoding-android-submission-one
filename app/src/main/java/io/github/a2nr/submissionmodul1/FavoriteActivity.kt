@@ -85,6 +85,7 @@ class FavoriteActivity : AppCompatActivity() {
                     mainCoroutine.launch {
                         withContext(Dispatchers.IO) {
                             contentResolver.delete(content, null, null)
+                            StackImageAppWidgetProvider.sendRefresh(this@FavoriteActivity)
                             getData()
                         }
                     }

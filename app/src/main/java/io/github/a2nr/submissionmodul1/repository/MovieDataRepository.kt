@@ -10,20 +10,22 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class MovieDataRepository(val movieDao: MovieDataAccess) {
+class MovieDataRepository(val movieDao: MovieDataAccess?) {
     companion object {
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
         const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
-        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri
-            = ("https://api.themoviedb.org/3/trending/" +
+        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri =
+            ("https://api.themoviedb.org/3/trending/" +
                     "$media_type/$time_window?api_key=$API_KEY&language=$language").toUri()
-        fun getLinkSearchMovie(media_type: String,queryTittle: String,language: String): Uri
-            = ("https://api.themoviedb.org/3/search/" +
+
+        fun getLinkSearchMovie(media_type: String, queryTittle: String, language: String): Uri =
+            ("https://api.themoviedb.org/3/search/" +
                     "$media_type?api_key=$API_KEY&language=$language&query=$queryTittle").toUri()
-        fun getLinkReleaseToday(date : String) : Uri
-            = ("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY" +
-                "&primary_release_date.gte=$date" +
-                "&primary_release_date.lte=$date").toUri()
+
+        fun getLinkReleaseToday(date: String): Uri =
+            ("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY" +
+                    "&primary_release_date.gte=$date" +
+                    "&primary_release_date.lte=$date").toUri()
 
     }
 
@@ -35,36 +37,44 @@ class MovieDataRepository(val movieDao: MovieDataAccess) {
     val mutIdExists = MutableLiveData<Boolean>()
 
     fun storeMovie(movieData: MovieData) {
-          repoCoroutine.launch {
-             withContext(Dispatchers.IO) {
-                movieDao.insert(movieData)
+        movieDao?.let {
+            repoCoroutine.launch {
+                withContext(Dispatchers.IO) {
+                    it.insert(movieData)
+                }
             }
         }
     }
 
     fun removeMovie(movieData: MovieData) {
-        repoCoroutine.launch {
-            withContext(Dispatchers.IO) {
-                movieDao.delete(movieData)
+        movieDao?.let {
+            repoCoroutine.launch {
+                withContext(Dispatchers.IO) {
+                    it.delete(movieData)
+                }
             }
         }
     }
 
 
-    fun doCheckIsMovieExists(key : Int){
-        repoCoroutine.launch {
-            mutIdExists.value = withContext(Dispatchers.IO) {
-                val i = movieDao.getIdfromId(key)
-                Log.i("doCheckIsMovieExists","$i :: $key ==> ${i == key}")
-                i == key
+    fun doCheckIsMovieExists(key: Int) {
+        movieDao?.let {
+            repoCoroutine.launch {
+                mutIdExists.value = withContext(Dispatchers.IO) {
+                    val i = it.getIdfromId(key)
+                    Log.i("doCheckIsMovieExists", "$i :: $key ==> ${i == key}")
+                    i == key
+                }
             }
         }
     }
 
     fun doGetMoviesStorage() {
-        repoCoroutine.launch {
-            mutMovieData.value = withContext(Dispatchers.IO) {
-                movieDao.getAll()
+        movieDao?.let {
+            repoCoroutine.launch {
+                mutMovieData.value = withContext(Dispatchers.IO) {
+                    it.getAll()
+                }
             }
         }
     }
@@ -80,24 +90,25 @@ class MovieDataRepository(val movieDao: MovieDataAccess) {
 
     fun doSearchMovies(media_type: String, queryTittle: String, language: String) {
         repoCoroutine.launch {
-            fetchData(getLinkSearchMovie(media_type,queryTittle,language))
-                ?.let{
+            fetchData(getLinkSearchMovie(media_type, queryTittle, language))
+                ?.let {
                     mutMovieData.value = it
                 }
         }
 
     }
-    fun doGetReleaseMovie(date: String){
+
+    fun doGetReleaseMovie(date: String) {
         repoCoroutine.launch {
             mutMovieData.value = getReleaseMovie(date)
         }
     }
 
-    suspend fun getReleaseMovie(date:String) : List<MovieData>? {
+    suspend fun getReleaseMovie(date: String): List<MovieData>? {
         return fetchData(getLinkReleaseToday(date))
     }
 
-    private suspend fun fetchData(uri: Uri): List<MovieData>?{
+    private suspend fun fetchData(uri: Uri): List<MovieData>? {
 
         /* pull data from server, wait until done */
         val tmpString = withContext(Dispatchers.IO) {
