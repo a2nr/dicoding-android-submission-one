@@ -1,9 +1,6 @@
 package io.github.a2nr.submissionmodul1
 
-import android.app.AlarmManager
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -210,15 +207,33 @@ class AlarmReceiver : BroadcastReceiver() {
                 }
                 ss
             }
+            val ntfBuilder =
+                when (notifId) {
+                    PENDING_REMAINDER_DAILY_CODE -> builder.setContentTitle(title)
+                        .setContentText(s)
+                        .build()
+                    //PENDING_REMAINDER_RELEASE_CODE
+                    else -> {
+                        val notfStyle = NotificationCompat.InboxStyle()
+                            .addLine(message[0])
+                            .addLine(message[1])
+                            .addLine(message[2])
+                            .addLine(message[3])
+                            .setBigContentTitle("Release Now")
+                            .setSummaryText("+${message.size-4} more")
 
+                        builder.setContentTitle(title)
+                            .setContentText(s)
+                            .setStyle(notfStyle)
+                            .build()
+                    }
+                }
             notificationManagerCompat.notify(
                 notifId + (Date().time / 1000L % Integer.MAX_VALUE).toInt()
-                , builder.setContentTitle(title)
-                    .setContentText(s)
-                    .build()
+                , ntfBuilder
             )
-
         }
+
 
         // Gunakan metode ini untuk mengecek apakah alarm tersebut sudah terdaftar di alarm manager
         private fun isAlarmSet(context: Context, type: String): Boolean {
@@ -231,7 +246,7 @@ class AlarmReceiver : BroadcastReceiver() {
             return a
         }
 
-         fun cancelAlarm(context: Context, type: String) {
+        fun cancelAlarm(context: Context, type: String) {
             val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val intent = Intent(context, AlarmReceiver::class.java)
             val requestCode = if (type.equals(
@@ -244,15 +259,15 @@ class AlarmReceiver : BroadcastReceiver() {
 
             alarmManager.cancel(pendingIntent)
         }
-
     }
+
 
     private val mut = MutableLiveData<List<MovieData>>()
     private val dat: LiveData<List<MovieData>>
         get() = mut
     private val alarmJob = Job()
     private val alarmCoroutine = CoroutineScope(Dispatchers.Main + alarmJob)
-    private lateinit var str : Array<String>
+    private lateinit var str: Array<String>
 
     override fun onReceive(context: Context, intent: Intent) {
         val notifIntent = Intent(context, MainActivity::class.java)
@@ -262,18 +277,18 @@ class AlarmReceiver : BroadcastReceiver() {
             when (_type) {
                 TYPE_REMAINDER_RELEASE -> {
                     val repo = MovieDataRepository(null)
-                    var callObserveRemove :(()->Unit)? =null
+                    var callObserveRemove: (() -> Unit)? = null
                     val obs = Observer<List<MovieData>> { data ->
                         str = Array(data.size) {
-                           data[it].title
-                       }
+                            data[it].title
+                        }
                         callObserveRemove?.invoke()
                         showAlarmNotification(
                             context, "Release Today", str, PENDING_REMAINDER_RELEASE_CODE
                             , notifIntent
                         )
                     }
-                    callObserveRemove={
+                    callObserveRemove = {
                         dat.removeObserver(obs)
                     }
                     notifIntent.action = ListMovieFragment.NOTIFICATION_FEEDBACK
