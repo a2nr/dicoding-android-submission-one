@@ -1,22 +1,23 @@
 apply plugin: 'com.android.application'
-
 apply plugin: 'kotlin-android'
-
 apply plugin: 'kotlin-android-extensions'
-
 apply plugin: 'kotlin-kapt'
-
 android {
     compileSdkVersion 29
     buildToolsVersion "29.0.1"
+
+
     defaultConfig {
-        applicationId "io.github.a2nr.submissionmodul1"
+        applicationId "io.github.a2nr.myfavoritemovie"
         minSdkVersion 22
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "TMDB_API_KEY", '"a1eea6d03b1f0244d15177fec40aeb61"')
+    }
+    dataBinding {
+        enabled = true
     }
     buildTypes {
         release {
@@ -24,12 +25,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    dataBinding {
-        enabled = true
-    }
-    packagingOptions {
-        exclude 'META-INF/atomicfu.kotlin_module'
-    }
+
 }
 
 dependencies {

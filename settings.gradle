@@ -1,2 +1,2 @@
-include ':app'
+include ':app', ':myfavoritemovie'
 rootProject.name='Sub Mission Modul 1'

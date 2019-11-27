@@ -1,15 +1,12 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.myfavoritemovie
 
-import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -18,33 +15,22 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
-import io.github.a2nr.submissionmodul1.databinding.FragmentListMovieBinding
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
-import java.text.SimpleDateFormat
-import java.util.*
+import io.github.a2nr.myfavoritemovie.adapter.ItemMovieAdapter
+import io.github.a2nr.myfavoritemovie.databinding.FragmentListMovieBinding
+import io.github.a2nr.myfavoritemovie.repository.MovieData
+import io.github.a2nr.myfavoritemovie.viewmodel.AppViewModelFactory
+import io.github.a2nr.myfavoritemovie.viewmodel.ListMovieViewModel
 
 class ListMovieFragment : Fragment() {
-    companion object {
-        const val NOTIFICATION_FEEDBACK = "ListMovieFragment.NOTIFICATION"
-    }
-
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
     private lateinit var lMd: List<MovieData>
     private lateinit var vM: ListMovieViewModel
     private lateinit var binding: FragmentListMovieBinding
-    private lateinit var typeMenu: MenuItem
+//    private lateinit var typeMenu: MenuItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
             .get(ListMovieViewModel::class.java)
-        this.activity?.intent?.let {
-            if (it.action == NOTIFICATION_FEEDBACK) {
-                vM.typeTag = R.id.type_release_now
-            }
-        }
         super.onCreate(savedInstanceState)
     }
 
@@ -102,8 +88,9 @@ class ListMovieFragment : Fragment() {
             }
             lMd = it
         }
-        vM.listMovieData.observe(this,obs)
+        vM.listMovieData.observe(this, obs)
         setHasOptionsMenu(true)
+        vM.doGetFavorite()
         return binding.root
     }
 
@@ -164,88 +151,11 @@ class ListMovieFragment : Fragment() {
 
     }
 
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        inflater.inflate(R.menu.main_menu, menu)
-        typeMenu = menu.findItem(R.id.type_menu)
-        when (vM.typeTag) {
-            null -> vM.typeTag = R.id.type_movie
-        }
-        vM.typeTag?.let {
-            menu.performIdentifierAction(it, 0)
-            it
-        }
-        (menu.findItem(R.id.search).actionView as SearchView)
-            .setOnQueryTextListener(object :
-                SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    Log.i("onQueryTextSubmit", "triggered?")
-                    query?.apply {
-                        vM.doSearchMovie(
-                            run {
-                                when (vM.typeTag) {
-                                    R.id.type_tv_show -> ListMovieViewModel.TV
-                                    else -> ListMovieViewModel.MOVIE
-                                }
-                            },
-                            query, resources.getString(R.string.lang_code)
-                        )
-                    }
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    Log.i("onQueryTextChange", "triggered?")
-                    return true
-                }
-            })
-        super.onCreateOptionsMenu(menu, inflater)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return let {
-            when (item.itemId) {
-                R.id.setting -> {
-                    this.view?.findNavController()?.navigate(
-                        ListMovieFragmentDirections
-                            .actionListMovieFragmentToSettingFragment()
-                    )
-                }
-                R.id.change_lang -> {
-                    startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS))
-                }
-                R.id.type_movie -> {
-                    typeMenu.title = item.title
-                    vM.typeTag = R.id.type_movie
-                    vM.doGetMovies(
-                        ListMovieViewModel.MOVIE
-                        , "day", resources.getString(R.string.lang_code)
-                    )
-                }
-                R.id.type_tv_show -> {
-                    typeMenu.title = item.title
-                    vM.typeTag = R.id.type_tv_show
-                    vM.doGetMovies(
-                        ListMovieViewModel.TV
-                        , "day", resources.getString(R.string.lang_code)
-                    )
-                }
-                R.id.type_my_favorite -> {
-                    typeMenu.title = item.title
-                    vM.typeTag = R.id.type_my_favorite
-                    vM.doGetFavorite()
-                }
-                R.id.type_release_now -> {
-                    typeMenu.title = item.title
-                    vM.doGetReleaseMovie(
-                        SimpleDateFormat(
-                            "yyyy-MM-dd",
-                            Locale.getDefault()
-                        ).format(Calendar.getInstance().time)
-                    )
-                }
-            }
-            true
-        }
-    }
+//    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+//        inflater.inflate(R.menu.main_menu, menu)
+//        typeMenu = menu.findItem(R.id.type_menu)
+//        menu.performIdentifierAction(R.id.type_my_favorite, 0)
+//        super.onCreateOptionsMenu(menu, inflater)
+//    }
 
 }
