@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1.repository
+package io.github.a2nr.jetpakcourse.repository
 
 import android.content.ContentProvider
 import android.content.ContentUris
@@ -20,7 +20,7 @@ class MovieDataProvider : ContentProvider() {
 
     init {
         MATCHER.addURI(AUTHORITY, MovieData.NAME, FAVORITE)
-        MATCHER.addURI(AUTHORITY,"${MovieData.NAME}/#" , FAVORITE_ID)
+        MATCHER.addURI(AUTHORITY, "${MovieData.NAME}/#", FAVORITE_ID)
     }
 
     override fun onCreate(): Boolean {
@@ -80,7 +80,7 @@ class MovieDataProvider : ContentProvider() {
             val dao = MovieDatabase.getInstance(context).movieDao()
             val path_id = MATCHER.match(uri)
             when (path_id) {
-                 FAVORITE_ID-> {
+                FAVORITE_ID -> {
                     count++
                     uri.lastPathSegment?.let {
                         dao.delete(it.toInt())
@@ -88,7 +88,7 @@ class MovieDataProvider : ContentProvider() {
                     }
 
                 }
-                else->{
+                else -> {
                     Log.e("MovieDataProvide", "error uri")
                 }
             }

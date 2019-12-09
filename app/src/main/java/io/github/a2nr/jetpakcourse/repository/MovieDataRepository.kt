@@ -1,10 +1,10 @@
-package io.github.a2nr.submissionmodul1.repository
+package io.github.a2nr.jetpakcourse.repository
 
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
-import io.github.a2nr.submissionmodul1.BuildConfig
+import io.github.a2nr.jetpakcourse.BuildConfig
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request

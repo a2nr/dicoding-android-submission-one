@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse.receiver
 
 import android.app.*
 import android.content.BroadcastReceiver
@@ -13,8 +13,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.preference.PreferenceManager
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.ListMovieFragment
+import io.github.a2nr.jetpakcourse.MainActivity
+import io.github.a2nr.jetpakcourse.R
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -40,7 +43,10 @@ class AlarmReceiver : BroadcastReceiver() {
                             false
                         )
                     ) {
-                        if ((!isAlarmSet(_context, TYPE_REMAINDER_RELEASE))) {
+                        if ((!isAlarmSet(
+                                _context,
+                                TYPE_REMAINDER_RELEASE
+                            ))) {
                             val alarmManager =
                                 (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
 
@@ -56,8 +62,12 @@ class AlarmReceiver : BroadcastReceiver() {
                                 }
                             } else {
                                 cal.apply {
-                                    set(Calendar.HOUR_OF_DAY, HOUR_RELEASE)
-                                    set(Calendar.MINUTE, MINUTE_RELEASE)
+                                    set(Calendar.HOUR_OF_DAY,
+                                        HOUR_RELEASE
+                                    )
+                                    set(Calendar.MINUTE,
+                                        MINUTE_RELEASE
+                                    )
                                     set(Calendar.SECOND, 0)
                                 }
                             }
@@ -66,9 +76,13 @@ class AlarmReceiver : BroadcastReceiver() {
                                 AlarmManager.RTC_WAKEUP,
                                 cal.timeInMillis, AlarmManager.INTERVAL_DAY,
                                 PendingIntent.getBroadcast(
-                                    _context, PENDING_REMAINDER_RELEASE_CODE,
+                                    _context,
+                                    PENDING_REMAINDER_RELEASE_CODE,
                                     Intent(_context, AlarmReceiver::class.java).apply {
-                                        putExtra(TYPE_REMAINDER, TYPE_REMAINDER_RELEASE)
+                                        putExtra(
+                                            TYPE_REMAINDER,
+                                            TYPE_REMAINDER_RELEASE
+                                        )
                                     }, 0
                                 )
                             )
@@ -78,8 +92,15 @@ class AlarmReceiver : BroadcastReceiver() {
                             Log.i("createRemainderRelease", "Already Created")
                         }
                     } else {
-                        if (isAlarmSet(_context, TYPE_REMAINDER_RELEASE)) {
-                            cancelAlarm(_context, TYPE_REMAINDER_RELEASE)
+                        if (isAlarmSet(
+                                _context,
+                                TYPE_REMAINDER_RELEASE
+                            )
+                        ) {
+                            cancelAlarm(
+                                _context,
+                                TYPE_REMAINDER_RELEASE
+                            )
                         }
                         Log.i("createRemainderRelease", "disabled")
                     }
@@ -97,12 +118,19 @@ class AlarmReceiver : BroadcastReceiver() {
                             false
                         )
                     ) {
-                        if (!isAlarmSet(_context, TYPE_REMAINDER_DAILY)) {
+                        if (!isAlarmSet(
+                                _context,
+                                TYPE_REMAINDER_DAILY
+                            )
+                        ) {
                             val alarmManager =
                                 (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
                             val intent = Intent(_context, AlarmReceiver::class.java)
                                 .apply {
-                                    putExtra(TYPE_REMAINDER, TYPE_REMAINDER_DAILY)
+                                    putExtra(
+                                        TYPE_REMAINDER,
+                                        TYPE_REMAINDER_DAILY
+                                    )
                                 }
                             val pending = PendingIntent.getBroadcast(
                                 _context,
@@ -123,8 +151,12 @@ class AlarmReceiver : BroadcastReceiver() {
                                 }
                             } else {
                                 cal.apply {
-                                    set(Calendar.HOUR_OF_DAY, HOUR_DAILY)
-                                    set(Calendar.MINUTE, MINUTE_DAILY)
+                                    set(Calendar.HOUR_OF_DAY,
+                                        HOUR_DAILY
+                                    )
+                                    set(Calendar.MINUTE,
+                                        MINUTE_DAILY
+                                    )
                                     set(Calendar.SECOND, 0)
                                 }
 
@@ -140,8 +172,15 @@ class AlarmReceiver : BroadcastReceiver() {
                             Log.i("createRemainderDaily", "Already Created")
                         }
                     } else {
-                        if (isAlarmSet(_context, TYPE_REMAINDER_DAILY)) {
-                            cancelAlarm(_context, TYPE_REMAINDER_DAILY)
+                        if (isAlarmSet(
+                                _context,
+                                TYPE_REMAINDER_DAILY
+                            )
+                        ) {
+                            cancelAlarm(
+                                _context,
+                                TYPE_REMAINDER_DAILY
+                            )
                         }
                         Log.i("createRemainderDaily", "disabled")
                     }
@@ -220,7 +259,7 @@ class AlarmReceiver : BroadcastReceiver() {
                             .addLine(message[2])
                             .addLine(message[3])
                             .setBigContentTitle("Release Now")
-                            .setSummaryText("+${message.size-4} more")
+                            .setSummaryText("+${message.size - 4} more")
 
                         builder.setContentTitle(title)
                             .setContentText(s)
@@ -284,14 +323,19 @@ class AlarmReceiver : BroadcastReceiver() {
                         }
                         callObserveRemove?.invoke()
                         showAlarmNotification(
-                            context, "Release Today", str, PENDING_REMAINDER_RELEASE_CODE
-                            , notifIntent
+                            context,
+                            "Release Today",
+                            str,
+                            PENDING_REMAINDER_RELEASE_CODE
+                            ,
+                            notifIntent
                         )
                     }
                     callObserveRemove = {
                         dat.removeObserver(obs)
                     }
-                    notifIntent.action = ListMovieFragment.NOTIFICATION_FEEDBACK
+                    notifIntent.action =
+                        ListMovieFragment.NOTIFICATION_FEEDBACK
                     dat.observeForever(obs)
                     alarmCoroutine.launch {
                         mut.value = withContext(Dispatchers.IO) {
@@ -309,7 +353,8 @@ class AlarmReceiver : BroadcastReceiver() {
                         context,
                         "Daily Remainder",
                         Array(1) { "Explore Movie Now!!" },
-                        PENDING_REMAINDER_DAILY_CODE, notifIntent
+                        PENDING_REMAINDER_DAILY_CODE,
+                        notifIntent
                     )
                 }
                 else -> {

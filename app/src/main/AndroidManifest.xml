@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="io.github.a2nr.submissionmodul1">
+    package="io.github.a2nr.jetpakcourse">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -26,7 +26,7 @@
             android:exported="true" />
 
         <receiver
-            android:name=".AlarmReceiver"
+            android:name=".receiver.AlarmReceiver"
             android:enabled="true"
             android:exported="true" />
 
@@ -40,7 +40,7 @@
             </intent-filter>
         </activity>
 
-        <receiver android:name=".StackImageAppWidgetProvider">
+        <receiver android:name=".widgetapp.StackImageAppWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -51,7 +51,7 @@
         </receiver>
 
         <service
-            android:name=".StackImageService"
+            android:name=".widgetapp.StackImageService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
     </application>
 

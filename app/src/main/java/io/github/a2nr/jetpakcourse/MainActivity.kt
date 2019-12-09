@@ -1,13 +1,8 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
-import java.text.SimpleDateFormat
-import java.util.*
+import io.github.a2nr.jetpakcourse.receiver.AlarmReceiver
 
 class MainActivity : AppCompatActivity() {
 

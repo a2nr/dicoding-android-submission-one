@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1.repository
+package io.github.a2nr.jetpakcourse.repository
 
 import android.os.Parcel
 import android.os.Parcelable
@@ -8,15 +8,15 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = MovieData.TABLE_NAME)
 data class MovieData(
-    @PrimaryKey                               var id: Int = -1,
-    @ColumnInfo(name = VOTE_AVERAGE)          var vote_average: Float = 0f,
-    @ColumnInfo(name = TITLE)                 var title: String = "",
-    @ColumnInfo(name = RELEASE_DATE)          var release_date: String = "",
-    @ColumnInfo(name = ORIGINAL_LANGUAGE)     var original_language: String = "",
-    @ColumnInfo(name = BACKDROP_PATH)         var backdrop_path: String = "",
-    @ColumnInfo(name = OVERVIEW)              var overview: String = "",
-    @ColumnInfo(name = POSTER_PATH)           var poster_path: String = "",
-    @ColumnInfo(name = MEDIA_TYPE)            var media_type: String = ""
+    @PrimaryKey var id: Int = -1,
+    @ColumnInfo(name = VOTE_AVERAGE) var vote_average: Float = 0f,
+    @ColumnInfo(name = TITLE) var title: String = "",
+    @ColumnInfo(name = RELEASE_DATE) var release_date: String = "",
+    @ColumnInfo(name = ORIGINAL_LANGUAGE) var original_language: String = "",
+    @ColumnInfo(name = BACKDROP_PATH) var backdrop_path: String = "",
+    @ColumnInfo(name = OVERVIEW) var overview: String = "",
+    @ColumnInfo(name = POSTER_PATH) var poster_path: String = "",
+    @ColumnInfo(name = MEDIA_TYPE) var media_type: String = ""
 ) : Parcelable {
     companion object {
         const val NAME = "MovieData"
@@ -36,6 +36,7 @@ data class MovieData(
             override fun newArray(size: Int): Array<MovieData?> = arrayOfNulls(size)
         }
     }
+
     constructor(source: Parcel) : this(
         source.readInt(),
         source.readFloat(),

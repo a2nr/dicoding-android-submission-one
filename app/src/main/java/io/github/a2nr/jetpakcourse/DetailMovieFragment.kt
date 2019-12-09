@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,14 +9,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
-import io.github.a2nr.submissionmodul1.databinding.FragmentMovieDetailBinding
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import io.github.a2nr.jetpakcourse.databinding.FragmentMovieDetailBinding
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.viewmodel.AppViewModelFactory
+import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
+import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
 
 
 class DetailMovieFragment : Fragment() {
-    private lateinit var vM: ListMovieViewModel
+    private lateinit var vM: MovieViewModel
     private lateinit var movieData: MovieData
     private var isFavorite: Boolean = false
     private lateinit var binding: FragmentMovieDetailBinding
@@ -36,14 +37,14 @@ class DetailMovieFragment : Fragment() {
                 titleTextView.text = it.title
                 voteAverage.text = it.vote_average.toString()
                 Glide.with(this@DetailMovieFragment)
-                    .load(ListMovieViewModel.getLinkImage(it.poster_path))
+                    .load(MovieViewModel.getLinkImage(it.poster_path))
                     .into(this.posterImageView)
             }
             vM = ViewModelProviders.of(
                 this@DetailMovieFragment,
                 AppViewModelFactory(this@DetailMovieFragment.requireActivity().application)
             )
-                .get(ListMovieViewModel::class.java).apply {
+                .get(MovieViewModel::class.java).apply {
                     isMovieExists.observe(this@DetailMovieFragment, Observer {
                         isFavorite = it
                         updateFabIcon()

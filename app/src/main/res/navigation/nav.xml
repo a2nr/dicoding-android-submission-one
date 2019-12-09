@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/listMovieFragment"
-        android:name="io.github.a2nr.submissionmodul1.ListMovieFragment"
+        android:name="io.github.a2nr.jetpakcourse.ListMovieFragment"
         android:label="fragment_list_movie"
-        tools:layout="@layout/fragment_list_movie" >
+        tools:layout="@layout/fragment_list_movie">
         <action
             android:id="@+id/action_listMovieFragment_to_detailMovieFragment"
             app:destination="@id/detailMovieFragment" />
@@ -19,20 +19,20 @@
     </fragment>
     <fragment
         android:id="@+id/detailMovieFragment"
-        android:name="io.github.a2nr.submissionmodul1.DetailMovieFragment"
+        android:name="io.github.a2nr.jetpakcourse.DetailMovieFragment"
         android:label="fragment_movie_detail"
-        tools:layout="@layout/fragment_movie_detail" >
+        tools:layout="@layout/fragment_movie_detail">
         <argument
             android:name="dataDetail"
-            app:argType="io.github.a2nr.submissionmodul1.repository.MovieData" />
+            app:argType="io.github.a2nr.jetpakcourse.repository.MovieData" />
         <action
             android:id="@+id/action_detailMovieFragment_to_listMovieFragment"
             app:destination="@id/listMovieFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingFragment"
-        android:name="io.github.a2nr.submissionmodul1.SettingFragment"
-        android:label="SettingFragment" >
+        android:name="io.github.a2nr.jetpakcourse.SettingFragment"
+        android:label="SettingFragment">
         <action
             android:id="@+id/action_settingFragment_to_listMovieFragment"
             app:destination="@id/listMovieFragment" />

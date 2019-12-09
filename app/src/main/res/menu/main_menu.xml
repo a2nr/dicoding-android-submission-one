@@ -14,12 +14,12 @@
                 android:title="@string/tv_show" />
             <item
                 android:id="@+id/type_my_favorite"
-                android:title="@string/favorite" />
+                android:title="@string/favorite"
+                android:visible="false"/>
             <item
                 android:id="@+id/type_release_now"
                 android:title="@string/release_now"
-                android:visible="false"
-                />
+                android:visible="false" />
         </menu>
     </item>
     <item
@@ -35,5 +35,5 @@
     <item
         android:id="@+id/setting"
         android:title="@string/setting"
-        app:showAsAction="never"/>
+        app:showAsAction="never" />
 </menu>

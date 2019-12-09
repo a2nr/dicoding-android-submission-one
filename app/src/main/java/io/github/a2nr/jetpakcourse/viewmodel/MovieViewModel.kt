@@ -1,17 +1,18 @@
-package io.github.a2nr.submissionmodul1.viewmodel
+package io.github.a2nr.jetpakcourse.viewmodel
 
-import android.app.Application
+import android.content.Context
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
-import io.github.a2nr.submissionmodul1.repository.MovieDatabase
+import androidx.lifecycle.ViewModel
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.repository.MovieDatabase
 
-class ListMovieViewModel(
-    application: Application
-) : AndroidViewModel(application) {
+class MovieViewModel(
+    context: Context
+//) : AndroidViewModel(application) {
+): ViewModel(){
     companion object {
         const val MOVIE: String = "movie"
         const val TV: String = "tv"
@@ -22,7 +23,7 @@ class ListMovieViewModel(
 
     private val repo: MovieDataRepository = MovieDataRepository(
         MovieDatabase
-            .getInstance(application)
+            .getInstance(context)
             .movieDao()
     )
     val listMovieData: LiveData<List<MovieData>>

@@ -1,6 +1,5 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse.widgetapp
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
@@ -9,6 +8,7 @@ import android.content.Intent
 import android.util.Log
 import android.widget.RemoteViews
 import androidx.core.net.toUri
+import io.github.a2nr.jetpakcourse.R
 
 /**
  * Implementation of App Widget functionality.
@@ -23,7 +23,10 @@ class StackImageAppWidgetProvider : AppWidgetProvider() {
         for (appWidgetId in appWidgetIds) {
             appWidgetManager.updateAppWidget(
                 appWidgetId,
-                configAppWidget(context, appWidgetId)
+                configAppWidget(
+                    context,
+                    appWidgetId
+                )
             )
 
         }
@@ -79,9 +82,15 @@ class StackImageAppWidgetProvider : AppWidgetProvider() {
                 context.packageName,
                 R.layout.stack_image_app_widget
             ).apply {
-                setTextViewText(R.id.appwidget_text, context.getString(R.string.favorite_movie))
+                setTextViewText(
+                    R.id.appwidget_text, context.getString(
+                        R.string.favorite_movie
+                    ))
                 setRemoteAdapter(R.id.StackViewFavorite, intent)
-                setEmptyView(R.id.StackViewFavorite, R.id.empty_view)
+                setEmptyView(
+                    R.id.StackViewFavorite,
+                    R.id.empty_view
+                )
             }
 
         }

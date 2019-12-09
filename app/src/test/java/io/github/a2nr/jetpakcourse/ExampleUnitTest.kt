@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse
 
 import org.junit.Test
 

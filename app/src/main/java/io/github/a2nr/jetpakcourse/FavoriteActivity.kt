@@ -1,7 +1,5 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse
 
-import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.res.Configuration
 import android.graphics.Rect
 import android.net.Uri
@@ -16,13 +14,13 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.repository.MovieDataProvider
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.repository.MovieDataProvider
+import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
+import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
 import kotlinx.android.synthetic.main.activity_favorite.*
 import kotlinx.coroutines.*
-import okhttp3.Dispatcher
 
 class FavoriteActivity : AppCompatActivity() {
 
@@ -131,7 +129,7 @@ class FavoriteActivity : AppCompatActivity() {
 
                     posterImageView.visibility = View.VISIBLE
                     Glide.with(this)
-                        .load(ListMovieViewModel.getLinkImage(it.poster_path))
+                        .load(MovieViewModel.getLinkImage(it.poster_path))
                         .into(posterImageView)
                     layout_detail_movie.visibility = View.VISIBLE
                     toolbar_title.visibility = View.INVISIBLE

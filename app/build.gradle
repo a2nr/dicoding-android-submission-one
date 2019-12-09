@@ -10,7 +10,7 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.1"
     defaultConfig {
-        applicationId "io.github.a2nr.submissionmodul1"
+        applicationId "io.github.a2nr.jetpakcourse"
         minSdkVersion 22
         targetSdkVersion 29
         versionCode 1
@@ -44,6 +44,19 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    androidTestImplementation "androidx.arch.core:core-testing:2.1.0"
+
+    /* https://guides.codepath.com/android/UI-Testing-with-Espresso#interacting-with-a-recyclerview
+     * digunakan untuk test 'RecyclerViewActions'
+     */
+    androidTestImplementation('com.android.support.test.espresso:espresso-contrib:2.2') {
+        // Necessary to avoid version conflicts
+        exclude group: 'com.android.support', module: 'appcompat'
+        exclude group: 'com.android.support', module: 'support-v4'
+        exclude group: 'com.android.support', module: 'support-annotations'
+        exclude module: 'recyclerview-v7'
+    }
+
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_ver"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_ver"
     apply plugin: "androidx.navigation.safeargs.kotlin"

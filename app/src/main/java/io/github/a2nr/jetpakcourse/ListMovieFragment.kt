@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse
 
 import android.content.Intent
 import android.content.res.Configuration
@@ -18,11 +18,11 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.github.a2nr.submissionmodul1.adapter.ItemMovieAdapter
-import io.github.a2nr.submissionmodul1.databinding.FragmentListMovieBinding
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewmodel.AppViewModelFactory
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
+import io.github.a2nr.jetpakcourse.databinding.FragmentListMovieBinding
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.viewmodel.AppViewModelFactory
+import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,18 +33,46 @@ class ListMovieFragment : Fragment() {
 
     private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
     private lateinit var lMd: List<MovieData>
-    private lateinit var vM: ListMovieViewModel
+    private lateinit var vM: MovieViewModel
     private lateinit var binding: FragmentListMovieBinding
     private lateinit var typeMenu: MenuItem
-
+    private lateinit var obs : Observer<List<MovieData>>
     override fun onCreate(savedInstanceState: Bundle?) {
         vM = ViewModelProviders.of(this, AppViewModelFactory(this.requireActivity().application))
-            .get(ListMovieViewModel::class.java)
+            .get(MovieViewModel::class.java)
         this.activity?.intent?.let {
             if (it.action == NOTIFICATION_FEEDBACK) {
                 vM.typeTag = R.id.type_release_now
             }
         }
+        this.view?.findNavController()?.let {
+            NavigationUI.setupActionBarWithNavController(
+                this@ListMovieFragment.requireActivity() as AppCompatActivity
+                , it
+            )
+        }
+
+        obs = Observer {
+            binding.apply {
+                val adapter =ItemMovieAdapter(this@ListMovieFragment.requireContext())
+                listMovie.visibility = RecyclerView.VISIBLE
+                progressBarDataReady.visibility = ProgressBar.INVISIBLE
+                onClickItemView = { view, pos ->
+                    Log.i("ListMovieFragment", "Item Clicked at $pos")
+                    view.findNavController().navigate(
+                        ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
+                            lMd[pos]
+                        )
+                    )
+                }
+                listMovie.adapter = adapter.apply {
+                    setCallBack(onClickItemView)
+                    submitData(it)
+                }
+            }
+            lMd = it
+        }
+        vM.listMovieData.observe(this,obs)
         super.onCreate(savedInstanceState)
     }
 
@@ -57,19 +85,14 @@ class ListMovieFragment : Fragment() {
         super.onCreateView(inflater, container, savedInstanceState)
 
 
-        this.view?.findNavController()?.let {
-            NavigationUI.setupActionBarWithNavController(
-                this@ListMovieFragment.requireActivity() as AppCompatActivity
-                , it
-            )
-        }
 
         binding = FragmentListMovieBinding.inflate(inflater, container, false).apply {
             lifecycleOwner = this@ListMovieFragment
             (this@ListMovieFragment.activity as AppCompatActivity)
                 .setSupportActionBar(toolbar)
             listMovie.apply {
-                addItemDecoration(ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt()))
+                val adapter =ItemMovieAdapter(this@ListMovieFragment.requireContext())
+                addItemDecoration(adapter.ItemDecoration(resources.getDimension(R.dimen.activity_horizontal_margin).toInt()))
                 layoutManager = run {
                     when (this.resources.configuration.orientation) {
                         Configuration.ORIENTATION_PORTRAIT ->
@@ -81,37 +104,16 @@ class ListMovieFragment : Fragment() {
                 }
             }
         }
-        val obs = Observer<List<MovieData>> {
-            binding.apply {
-                listMovie.visibility = RecyclerView.VISIBLE
-                progressBar.visibility = ProgressBar.INVISIBLE
-                onClickItemView = { view, pos ->
-                    Log.i("ListMovieFragment", "Item Clicked at $pos")
-                    view.findNavController().navigate(
-                        ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
-                            lMd[pos]
-                        )
-                    )
-                }
-                listMovie.adapter =
-                    ItemMovieAdapter(this@ListMovieFragment.requireContext())
-                        .apply {
-                            setCallBack(onClickItemView)
-                            submitData(it)
-                        }
-            }
-            lMd = it
-        }
-        vM.listMovieData.observe(this,obs)
         setHasOptionsMenu(true)
         return binding.root
     }
 
     override fun onResume() {
         if (!vM.listMovieData.value.isNullOrEmpty()) {
+            vM.listMovieData.observe(this,obs)
             binding.apply {
                 listMovie.visibility = RecyclerView.VISIBLE
-                progressBar.visibility = ProgressBar.INVISIBLE
+                progressBarDataReady.visibility = ProgressBar.INVISIBLE
             }
         }
         super.onResume()
@@ -132,37 +134,12 @@ class ListMovieFragment : Fragment() {
 
     override fun onPause() {
         binding.apply {
-            progressBar.visibility = ProgressBar.VISIBLE
+            progressBarDataReady.visibility = ProgressBar.VISIBLE
             listMovie.visibility = RecyclerView.INVISIBLE
         }
         super.onPause()
     }
 
-    inner class ItemDecoration(private val margin: Int) : RecyclerView.ItemDecoration() {
-
-        override fun getItemOffsets(
-            outRect: Rect,
-            view: View,
-            parent: RecyclerView,
-            state: RecyclerView.State
-        ) {
-            with(outRect) {
-                val pos = parent.getChildAdapterPosition(view) + 1
-                if (this@ListMovieFragment.resources.configuration.orientation
-                    == Configuration.ORIENTATION_PORTRAIT
-                ) {
-                    if (pos == 1) top = margin
-                } else {
-                    if ((pos == 1) || (pos == 2)) top = margin
-                }
-                left = margin
-                right = margin
-                bottom = margin
-
-            }
-        }
-
-    }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
@@ -183,8 +160,8 @@ class ListMovieFragment : Fragment() {
                         vM.doSearchMovie(
                             run {
                                 when (vM.typeTag) {
-                                    R.id.type_tv_show -> ListMovieViewModel.TV
-                                    else -> ListMovieViewModel.MOVIE
+                                    R.id.type_tv_show -> MovieViewModel.TV
+                                    else -> MovieViewModel.MOVIE
                                 }
                             },
                             query, resources.getString(R.string.lang_code)
@@ -217,7 +194,7 @@ class ListMovieFragment : Fragment() {
                     typeMenu.title = item.title
                     vM.typeTag = R.id.type_movie
                     vM.doGetMovies(
-                        ListMovieViewModel.MOVIE
+                        MovieViewModel.MOVIE
                         , "day", resources.getString(R.string.lang_code)
                     )
                 }
@@ -225,7 +202,7 @@ class ListMovieFragment : Fragment() {
                     typeMenu.title = item.title
                     vM.typeTag = R.id.type_tv_show
                     vM.doGetMovies(
-                        ListMovieViewModel.TV
+                        MovieViewModel.TV
                         , "day", resources.getString(R.string.lang_code)
                     )
                 }

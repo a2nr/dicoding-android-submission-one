@@ -1,6 +1,8 @@
-package io.github.a2nr.submissionmodul1.adapter
+package io.github.a2nr.jetpakcourse.adapter
 
 import android.content.Context
+import android.content.res.Configuration
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,10 +17,10 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import io.github.a2nr.submissionmodul1.R
-import io.github.a2nr.submissionmodul1.databinding.ItemMovieBinding
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.viewmodel.ListMovieViewModel
+import io.github.a2nr.jetpakcourse.R
+import io.github.a2nr.jetpakcourse.databinding.ItemMovieBinding
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
 
 
 class ItemMovieAdapter(
@@ -62,6 +64,31 @@ class ItemMovieAdapter(
         holder.at(position).bind()
     }
 
+    inner class ItemDecoration(private val margin: Int) : RecyclerView.ItemDecoration() {
+
+        override fun getItemOffsets(
+            outRect: Rect,
+            view: View,
+            parent: RecyclerView,
+            state: RecyclerView.State
+        ) {
+            with(outRect) {
+                val pos = parent.getChildAdapterPosition(view) + 1
+                if (context.resources.configuration.orientation
+                    == Configuration.ORIENTATION_PORTRAIT
+                ) {
+                    if (pos == 1) top = margin
+                } else {
+                    if ((pos == 1) || (pos == 2)) top = margin
+                }
+                left = margin
+                right = margin
+                bottom = margin
+
+            }
+        }
+
+    }
     inner class ViewHolder(private val binding: ItemMovieBinding) :
         RecyclerView.ViewHolder(binding.root) {
         var pos: Int = 0
@@ -121,7 +148,7 @@ class ItemMovieAdapter(
                 binding.languageText.text = movieData.original_language
                 binding.rateText.text = movieData.vote_average.toString()
                 binding.releaseDateText.text = movieData.release_date
-                imageReq.load(ListMovieViewModel.getLinkImage(movieData.backdrop_path))
+                imageReq.load(MovieViewModel.getLinkImage(movieData.backdrop_path))
                     .listener(imageListener)
                     .into(binding.imagePosterMovie)
 

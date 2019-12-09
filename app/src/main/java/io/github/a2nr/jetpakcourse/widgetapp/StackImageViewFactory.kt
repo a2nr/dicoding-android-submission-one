@@ -1,4 +1,4 @@
-package io.github.a2nr.submissionmodul1
+package io.github.a2nr.jetpakcourse.widgetapp
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -10,9 +10,10 @@ import android.widget.RemoteViewsService
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import io.github.a2nr.submissionmodul1.repository.MovieData
-import io.github.a2nr.submissionmodul1.repository.MovieDataProvider
-import io.github.a2nr.submissionmodul1.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.R
+import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.repository.MovieDataProvider
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 
 internal class StackImageViewFactory(
     private val context: Context
@@ -39,7 +40,8 @@ internal class StackImageViewFactory(
             val cr = contentResolver.query(
                 uriFav,
                 arrayOf(MovieData.TITLE, MovieData.POSTER_PATH),
-                null, null, null)
+                null, null, null
+            )
             cr?.run {
                 this.moveToFirst()
                 for (i in 1..this.count) {
@@ -72,7 +74,9 @@ internal class StackImageViewFactory(
     }
 
     override fun getViewAt(p0: Int): RemoteViews {
-        return RemoteViews(context.packageName, R.layout.item_widget_movie)
+        return RemoteViews(context.packageName,
+            R.layout.item_widget_movie
+        )
             .apply {
                 setImageViewBitmap(R.id.item_widget_image, widgetImage.get(p0))
             }

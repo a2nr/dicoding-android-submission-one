@@ -3,13 +3,13 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="io.github.a2nr.submissionmodul1.DetailMovieFragment">
+    tools:context="io.github.a2nr.jetpakcourse.DetailMovieFragment">
 
     <data>
 
         <variable
             name="detailMovieFragment"
-            type="io.github.a2nr.submissionmodul1.DetailMovieFragment" />
+            type="io.github.a2nr.jetpakcourse.DetailMovieFragment" />
 
     </data>
 
