@@ -18,7 +18,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
-import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -67,7 +66,7 @@ class ListMovieFragmentTestModul_1 {
     fun getData() {
         liveListMovieData.observeForever(observer)
         repo.doGetMovies(
-            MovieViewModel.MOVIE
+            MovieDataRepository.MOVIE
             ,
             "day"
             ,
@@ -79,7 +78,7 @@ class ListMovieFragmentTestModul_1 {
         curType = TYPE[1]
 
         repo.doGetMovies(
-            MovieViewModel.TV
+            MovieDataRepository.TV
             ,
             "day"
             ,
@@ -118,6 +117,7 @@ class ListMovieFragmentTestModul_1 {
         val MAX_SCROLL = 1
         var flag = false
         for (i in 0..MAX_SCROLL) {
+            Thread.sleep(2000)
             onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
                 if (view != null) {
                     while (view.isVisible) {
@@ -129,7 +129,7 @@ class ListMovieFragmentTestModul_1 {
             while (!flag) {
                 Thread.sleep(100)
             }
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             onView(withId(R.id.listMovie))
                 .perform(
                     RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
@@ -137,7 +137,7 @@ class ListMovieFragmentTestModul_1 {
                         click()
                     )
                 )
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             onView(withText(listMovieData?.get(i)?.title))
                 .check(matches(isDisplayed()))
                 .perform(pressBack())
@@ -163,9 +163,9 @@ class ListMovieFragmentTestModul_1 {
         onView(withId(R.id.type_menu)).perform(click())
         Thread.sleep(500)
         onView(withText("TV Show")).perform(click())
-
         for (i in 0..MAX_SCROLL) {
 
+            Thread.sleep(2000)
             onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
                 if (view != null) {
                     while (view.isVisible) {
@@ -177,7 +177,7 @@ class ListMovieFragmentTestModul_1 {
             while (!flag) {
                 Thread.sleep(100)
             }
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             onView(withId(R.id.listMovie))
                 .perform(
                     RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
@@ -185,7 +185,7 @@ class ListMovieFragmentTestModul_1 {
                         click()
                     )
                 )
-            Thread.sleep(1000)
+            Thread.sleep(2000)
             onView(withText(listTvData?.get(i)?.title))
                 .check(matches(isDisplayed()))
                 .perform(pressBack())

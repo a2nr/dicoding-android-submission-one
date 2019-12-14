@@ -10,10 +10,13 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 
-class MovieDataRepository(val movieDao: MovieDataAccess?) {
+class MovieDataRepository(
+    val movieDao: MovieDataAccess?,
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO ) {
     companion object {
+        const val MOVIE: String = "movie"
+        const val TV: String = "tv"
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
-        const val LINK_IMAGE: String = "https://image.tmdb.org/t/p/original"
         fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri =
             ("https://api.themoviedb.org/3/trending/" +
                     "$media_type/$time_window?api_key=$API_KEY&language=$language").toUri()
@@ -27,6 +30,9 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
                     "&primary_release_date.gte=$date" +
                     "&primary_release_date.lte=$date").toUri()
 
+        fun getLinkImage(width: String = "500", key: String): Uri {
+            return "https://image.tmdb.org/t/p/w$width$key".toUri()
+        }
     }
 
     private val repoJob = Job()
@@ -39,7 +45,7 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
     fun storeMovie(movieData: MovieData) {
         movieDao?.let {
             repoCoroutine.launch {
-                withContext(Dispatchers.IO) {
+                withContext(dispatcher) {
                     it.insert(movieData)
                 }
             }
@@ -49,7 +55,7 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
     fun removeMovie(movieData: MovieData) {
         movieDao?.let {
             repoCoroutine.launch {
-                withContext(Dispatchers.IO) {
+                withContext(dispatcher) {
                     it.delete(movieData)
                 }
             }
@@ -60,7 +66,7 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
     fun doCheckIsMovieExists(key: Int) {
         movieDao?.let {
             repoCoroutine.launch {
-                mutIdExists.value = withContext(Dispatchers.IO) {
+                mutIdExists.value = withContext(dispatcher) {
                     val i = it.getIdfromId(key)
                     Log.i("doCheckIsMovieExists", "$i :: $key ==> ${i == key}")
                     i == key
@@ -72,25 +78,25 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
     fun doGetMoviesStorage() {
         movieDao?.let {
             repoCoroutine.launch {
-                mutMovieData.value = withContext(Dispatchers.IO) {
+                mutMovieData.value = withContext(dispatcher) {
                     it.getAll()
                 }
             }
         }
     }
 
-    fun doGetMovies(media_type: String, time_window: String, language: String) {
+    fun doGetMovies(mediaType: String, time_window: String, language: String) {
         repoCoroutine.launch {
-            fetchData(getLinkTrendingMovie(media_type, time_window, language))
+            fetchData(getLinkTrendingMovie(mediaType, time_window, language))
                 ?.let {
                     mutMovieData.value = it
                 }
         }
     }
 
-    fun doSearchMovies(media_type: String, queryTittle: String, language: String) {
+    fun doSearchMovies(mediaType: String, queryTittle: String, language: String) {
         repoCoroutine.launch {
-            fetchData(getLinkSearchMovie(media_type, queryTittle, language))
+            fetchData(getLinkSearchMovie(mediaType, queryTittle, language))
                 ?.let {
                     mutMovieData.value = it
                 }
@@ -108,35 +114,33 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
         return fetchData(getLinkReleaseToday(date))
     }
 
-    private suspend fun fetchData(uri: Uri): List<MovieData>? {
-
-        /* pull data from server, wait until done */
-        val tmpString = withContext(Dispatchers.IO) {
-            "".run {
-                /* Will be connect to server to pull data using API */
-                val req = Request.Builder()
-                    .url(uri.toString())
-                    .build()
-                try {
-                    val response = client.newCall(req).execute()
-                    response.body?.string()
-                } catch (e: Exception) {
-                    Log.e("ViewModel", e.toString())
-                    null
-                }
+    fun getJSONData(uri: Uri) : String?{
+        return "".run {
+            /* Will be connect to server to pull data using API */
+            val req = Request.Builder()
+                .url(uri.toString())
+                .build()
+            try {
+                val response = client.newCall(req).execute()
+                response.body?.string()
+            } catch (e: Exception) {
+                Log.e("ViewModel", e.toString())
+                null
             }
         }
+    }
 
+    fun parse2MovieData(JSON: String) :  List<MovieData>?{
         var md: List<MovieData>? = null
 
         /* decode .js into list variable  */
-        if (!tmpString.isNullOrBlank()) {
+        if (!JSON.isBlank()) {
 
             /* try to decode with fix format from server */
             try {
 
                 /* get 'results' tag only */
-                val a = JSONObject(tmpString).getJSONArray("results")
+                val a = JSONObject(JSON).getJSONArray("results")
 
                 /* store in List with bloating decoder code*/
                 md = List(a.length()) { iii ->
@@ -158,19 +162,19 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
                             }
                             "unknown"
                         }
-                        this.backdrop_path = "backdrop_path".run {
+                        this.backdropPath = "backdrop_path".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
                                 "unknown"
                         }
-                        this.original_language = "original_language".run {
+                        this.originalLanguage = "original_language".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
                                 "unknown"
                         }
-                        this.media_type = "media_type".run {
+                        this.mediaType = "media_type".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
@@ -185,7 +189,7 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
                         /* in .js the 'release_date'    tag for movie category,
                          *            'first_air_date'  tag for tv category
                          * */
-                        release_date = arrayOf("release_date", "first_air_date").run {
+                        releaseDate = arrayOf("release_date", "first_air_date").run {
                             this.forEach {
                                 if (o.has(it)) {
                                     return@run o.getString(it)
@@ -193,13 +197,13 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
                             }
                             "unknown"
                         }
-                        this.vote_average = "vote_average".run {
+                        this.voteAverage = "vote_average".run {
                             if (o.has(this))
                                 o.getDouble(this).toFloat()
                             else
                                 0f
                         }
-                        this.poster_path = "poster_path".run {
+                        this.posterPath = "poster_path".run {
                             if (o.has(this))
                                 o.getString(this)
                             else
@@ -221,5 +225,16 @@ class MovieDataRepository(val movieDao: MovieDataAccess?) {
             }
         }
         return md
+    }
+
+    private suspend fun fetchData(uri: Uri): List<MovieData>? {
+
+        /* pull data from server, wait until done */
+        val tmpString = withContext(dispatcher) {
+            getJSONData(uri)
+        }
+        return tmpString?.let {
+            parse2MovieData(tmpString)}
+
     }
 }

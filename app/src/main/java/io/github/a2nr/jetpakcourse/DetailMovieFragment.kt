@@ -11,14 +11,15 @@ import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import io.github.a2nr.jetpakcourse.databinding.FragmentMovieDetailBinding
 import io.github.a2nr.jetpakcourse.repository.MovieData
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.viewmodel.AppViewModelFactory
-import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
+import io.github.a2nr.jetpakcourse.viewmodel.DetailMovieViewModel
 import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
 
 
 class DetailMovieFragment : Fragment() {
-    private lateinit var vM: MovieViewModel
-    private lateinit var movieData: MovieData
+    private lateinit var viewModel: DetailMovieViewModel
+    private var movieData: MovieData? = null
     private var isFavorite: Boolean = false
     private lateinit var binding: FragmentMovieDetailBinding
     override fun onCreateView(
@@ -30,28 +31,38 @@ class DetailMovieFragment : Fragment() {
         return FragmentMovieDetailBinding.inflate(inflater, container, false).apply {
             binding = this
             detailMovieFragment = this@DetailMovieFragment
-            movieData = DetailMovieFragmentArgs.fromBundle(arguments!!).dataDetail.also {
-                mediaType.text = it.media_type
-                overview.text = it.overview
-                releaseDate.text = it.release_date
-                titleTextView.text = it.title
-                voteAverage.text = it.vote_average.toString()
-                Glide.with(this@DetailMovieFragment)
-                    .load(MovieViewModel.getLinkImage(it.poster_path))
-                    .into(this.posterImageView)
+            movieData = arguments?.let { arg ->
+                DetailMovieFragmentArgs.fromBundle(arg).dataDetail.also {
+                    mediaType.text = it.mediaType
+                    overview.text = it.overview
+                    releaseDate.text = it.releaseDate
+                    titleTextView.text = it.title
+                    voteAverage.text = it.voteAverage.toString()
+                    Glide.with(this@DetailMovieFragment)
+                        .load(
+                            MovieDataRepository.getLinkImage(
+                                key = it.posterPath
+                            )
+                        )
+                        .fitCenter()
+                        .into(this.posterImageView)
+                }
             }
-            vM = ViewModelProviders.of(
+            viewModel = ViewModelProviders.of(
                 this@DetailMovieFragment,
                 AppViewModelFactory(this@DetailMovieFragment.requireActivity().application)
             )
-                .get(MovieViewModel::class.java).apply {
+                .get(DetailMovieViewModel::class.java).apply {
                     isMovieExists.observe(this@DetailMovieFragment, Observer {
                         isFavorite = it
                         updateFabIcon()
                     })
                 }
             floatingActionButton.run { hide();show() }
-            vM.doCheckMovieExists(movieData.id)
+            movieData?.let{
+                viewModel.doCheckMovieExists(it.id)
+            }
+
         }.root
     }
 
@@ -70,12 +81,14 @@ class DetailMovieFragment : Fragment() {
 
     fun fabOnClick() {
 
-        vM.run {
-            if (isFavorite) unmarkAsFavorite(movieData) else markAsFavorite(movieData)
+        viewModel.run {
+            movieData?.let{
+                if (isFavorite) unMarkAsFavorite(it) else markAsFavorite(it)
+            }
         }
         Snackbar.make(
             requireView(),
-            "${movieData.title} ${if (isFavorite) "Removed" else "Added"} into favorite"
+            "${movieData?.title} ${if (isFavorite) "Removed" else "Added"} into favorite"
             ,
             Snackbar.LENGTH_SHORT
         )

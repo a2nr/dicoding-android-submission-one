@@ -9,14 +9,14 @@ import androidx.room.PrimaryKey
 @Entity(tableName = MovieData.TABLE_NAME)
 data class MovieData(
     @PrimaryKey var id: Int = -1,
-    @ColumnInfo(name = VOTE_AVERAGE) var vote_average: Float = 0f,
+    @ColumnInfo(name = VOTE_AVERAGE) var voteAverage: Float = 0f,
     @ColumnInfo(name = TITLE) var title: String = "",
-    @ColumnInfo(name = RELEASE_DATE) var release_date: String = "",
-    @ColumnInfo(name = ORIGINAL_LANGUAGE) var original_language: String = "",
-    @ColumnInfo(name = BACKDROP_PATH) var backdrop_path: String = "",
+    @ColumnInfo(name = RELEASE_DATE) var releaseDate: String = "",
+    @ColumnInfo(name = ORIGINAL_LANGUAGE) var originalLanguage: String = "",
+    @ColumnInfo(name = BACKDROP_PATH) var backdropPath: String = "",
     @ColumnInfo(name = OVERVIEW) var overview: String = "",
-    @ColumnInfo(name = POSTER_PATH) var poster_path: String = "",
-    @ColumnInfo(name = MEDIA_TYPE) var media_type: String = ""
+    @ColumnInfo(name = POSTER_PATH) var posterPath: String = "",
+    @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = ""
 ) : Parcelable {
     companion object {
         const val NAME = "MovieData"
@@ -53,14 +53,14 @@ data class MovieData(
 
     override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
         writeInt(id)
-        writeFloat(vote_average)
+        writeFloat(voteAverage)
         writeString(title)
-        writeString(release_date)
-        writeString(original_language)
-        writeString(backdrop_path)
+        writeString(releaseDate)
+        writeString(originalLanguage)
+        writeString(backdropPath)
         writeString(overview)
-        writeString(poster_path)
-        writeString(media_type)
+        writeString(posterPath)
+        writeString(mediaType)
     }
 
 }

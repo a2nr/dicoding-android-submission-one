@@ -20,7 +20,7 @@ class SettingFragment : PreferenceFragmentCompat() {
                         AlarmReceiver.createRemainderRelease(context)
                         Snackbar.make(
                             this.requireView(),
-                            "Remainder Release Aktif",
+                            getString(R.string.remainder_active),
                             Snackbar.LENGTH_SHORT
                         )
                             .show()
@@ -29,7 +29,7 @@ class SettingFragment : PreferenceFragmentCompat() {
                         AlarmReceiver.cancelAlarm(context, AlarmReceiver.TYPE_REMAINDER_RELEASE)
                         Snackbar.make(
                             this.requireView(),
-                            "Remainder Release Tidak Aktif",
+                            getString(R.string.remainder_not_active),
                             Snackbar.LENGTH_SHORT
                         )
                             .show()
@@ -41,7 +41,7 @@ class SettingFragment : PreferenceFragmentCompat() {
                         AlarmReceiver.createRemainderDaily(context)
                         Snackbar.make(
                             this.requireView(),
-                            "Remainder Daily Aktif",
+                            getString(R.string.remainder_daily_active),
                             Snackbar.LENGTH_SHORT
                         )
                             .show()
@@ -49,7 +49,7 @@ class SettingFragment : PreferenceFragmentCompat() {
                         AlarmReceiver.cancelAlarm(context, AlarmReceiver.TYPE_REMAINDER_DAILY)
                         Snackbar.make(
                             this.requireView(),
-                            "Remainder Daily Tidak Aktif",
+                            getString(R.string.remainder_daily_not_active),
                             Snackbar.LENGTH_SHORT
                         )
                             .show()

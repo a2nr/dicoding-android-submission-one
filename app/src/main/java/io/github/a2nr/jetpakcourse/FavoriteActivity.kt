@@ -17,7 +17,7 @@ import com.bumptech.glide.Glide
 import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataProvider
-import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
 import kotlinx.android.synthetic.main.activity_favorite.*
 import kotlinx.coroutines.*
@@ -121,15 +121,20 @@ class FavoriteActivity : AppCompatActivity() {
             val mov = ldListMovieData.value?.get(index)
             mov?.let {
                 this@FavoriteActivity.apply {
-                    media_type.text = it.media_type
+                    media_type.text = it.mediaType
                     overview.text = it.overview
-                    release_date.text = it.release_date
+                    release_date.text = it.releaseDate
                     titleTextView.text = it.title
-                    vote_average.text = it.vote_average.toString()
+                    vote_average.text = it.voteAverage.toString()
 
                     posterImageView.visibility = View.VISIBLE
                     Glide.with(this)
-                        .load(MovieViewModel.getLinkImage(it.poster_path))
+                        .load(
+                            MovieDataRepository.getLinkImage(
+                                posterImageView.width.toString(),
+                                it.posterPath
+                            )
+                        )
                         .into(posterImageView)
                     layout_detail_movie.visibility = View.VISIBLE
                     toolbar_title.visibility = View.INVISIBLE
@@ -168,19 +173,19 @@ class FavoriteActivity : AppCompatActivity() {
                         MovieData().apply {
                             id =
                                 cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-                            vote_average =
+                            voteAverage =
                                 cursor.getFloat(cursor.getColumnIndexOrThrow(MovieData.VOTE_AVERAGE))
                             title =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.TITLE))
-                            release_date =
+                            releaseDate =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.RELEASE_DATE))
                             overview =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.OVERVIEW))
-                            media_type =
+                            mediaType =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.MEDIA_TYPE))
-                            poster_path =
+                            posterPath =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.POSTER_PATH))
-                            backdrop_path =
+                            backdropPath =
                                 cursor.getString(cursor.getColumnIndexOrThrow(MovieData.BACKDROP_PATH))
                             cursor.moveToNext()
                         }

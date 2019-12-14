@@ -20,7 +20,7 @@ import com.bumptech.glide.request.target.Target
 import io.github.a2nr.jetpakcourse.R
 import io.github.a2nr.jetpakcourse.databinding.ItemMovieBinding
 import io.github.a2nr.jetpakcourse.repository.MovieData
-import io.github.a2nr.jetpakcourse.viewmodel.MovieViewModel
+import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 
 
 class ItemMovieAdapter(
@@ -50,16 +50,8 @@ class ItemMovieAdapter(
         return ViewHolder(binding).set(callBack)
     }
 
-    override fun getItemCount(): Int = md?.size ?:0
+    override fun getItemCount(): Int = md?.size ?: 0
 
-    override fun onViewAttachedToWindow(holder: ViewHolder) {
-        Log.i("onViewAttached","Holder number${holder.pos.toString()}")
-        super.onViewAttachedToWindow(holder)
-    }
-    override fun onViewRecycled(holder: ViewHolder) {
-        Log.i("onViewRecycled","Holder number${holder.pos.toString()}")
-        super.onViewRecycled(holder)
-    }
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.at(position).bind()
     }
@@ -89,6 +81,7 @@ class ItemMovieAdapter(
         }
 
     }
+
     inner class ViewHolder(private val binding: ItemMovieBinding) :
         RecyclerView.ViewHolder(binding.root) {
         var pos: Int = 0
@@ -114,14 +107,14 @@ class ItemMovieAdapter(
             return this
         }
 
-        inner class ImageListener : RequestListener<Drawable>{
+        inner class ImageListener : RequestListener<Drawable> {
             override fun onLoadFailed(
                 e: GlideException?,
                 model: Any?,
                 target: Target<Drawable>?,
                 isFirstResource: Boolean
             ): Boolean {
-                Log.e("ImageListener","failed !!")
+                Log.e("ImageListener", "failed !!")
                 binding.layoutClickable.visibility = LinearLayout.VISIBLE
                 binding.progressBar.visibility = ProgressBar.INVISIBLE
                 return false
@@ -145,10 +138,15 @@ class ItemMovieAdapter(
             this@ItemMovieAdapter.md?.let {
                 val movieData = it[this@ViewHolder.pos]
                 binding.titleText.text = movieData.title
-                binding.languageText.text = movieData.original_language
-                binding.rateText.text = movieData.vote_average.toString()
-                binding.releaseDateText.text = movieData.release_date
-                imageReq.load(MovieViewModel.getLinkImage(movieData.backdrop_path))
+                binding.languageText.text = movieData.originalLanguage
+                binding.rateText.text = movieData.voteAverage.toString()
+                binding.releaseDateText.text = movieData.releaseDate
+                imageReq.load(
+                    MovieDataRepository.getLinkImage(
+                        "300",
+                        movieData.backdropPath
+                    )
+                )
                     .listener(imageListener)
                     .into(binding.imagePosterMovie)
 

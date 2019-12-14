@@ -48,9 +48,17 @@ internal class StackImageViewFactory(
                     var isDone = false
                     val index = this.getColumnIndexOrThrow(MovieData.POSTER_PATH)
                     val path = this.getString(index)
+                    val widthPoster = 100
+                    val heightPoster = 150
                     Glide.with(context.applicationContext)
-                        .asBitmap().fitCenter().override(110, 150)
-                        .load(MovieDataRepository.LINK_IMAGE + path)
+                        .asBitmap().fitCenter().override(widthPoster, heightPoster)
+                        .load(
+                            MovieDataRepository
+                                .getLinkImage(
+                                    widthPoster.toString(),
+                                    path
+                                )
+                        )
                         .into(object : CustomTarget<Bitmap>() {
                             override fun onLoadCleared(placeholder: Drawable?) {
                                 Log.i("onLoadCleared", " images cleared ?")
@@ -74,7 +82,8 @@ internal class StackImageViewFactory(
     }
 
     override fun getViewAt(p0: Int): RemoteViews {
-        return RemoteViews(context.packageName,
+        return RemoteViews(
+            context.packageName,
             R.layout.item_widget_movie
         )
             .apply {

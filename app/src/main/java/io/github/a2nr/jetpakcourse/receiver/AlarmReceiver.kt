@@ -1,6 +1,9 @@
 package io.github.a2nr.jetpakcourse.receiver
 
-import android.app.*
+import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -9,9 +12,9 @@ import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.preference.PreferenceManager
 import io.github.a2nr.jetpakcourse.ListMovieFragment
 import io.github.a2nr.jetpakcourse.MainActivity
