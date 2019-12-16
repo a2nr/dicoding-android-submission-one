@@ -146,12 +146,21 @@ class ListMovieFragmentTestModul_1 {
 
     @Test
     fun test_2_a() {
-
+        var flag = false
         onView(withId(R.id.type_menu)).perform(click())
         Thread.sleep(500)
         onView(withText("TV Show")).perform(click())
         Thread.sleep(500)
 
+        onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
+            while (view.isVisible) {
+                Thread.sleep(100)
+            }
+            flag = true
+        }
+        while (!flag) {
+            Thread.sleep(100)
+        }
         onView(withText(listTvData?.get(0)?.title)).check(matches(isDisplayed()))
 
     }
