@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 
-class DetailMovieViewModel(val repository: MovieDataRepository) : ViewModel(){
+class DetailMovieViewModel(val repository: MovieDataRepository) : ViewModel() {
 
     val isMovieExists: LiveData<Boolean>
         get() = repository.mutIdExists

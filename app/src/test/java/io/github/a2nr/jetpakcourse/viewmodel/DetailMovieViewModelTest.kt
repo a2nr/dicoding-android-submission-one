@@ -1,4 +1,5 @@
 package io.github.a2nr.jetpakcourse.viewmodel
+
 /* DetailMovieViewModel
  * 1) markAsFavorite()
  *      Pengujian dilakukan dengan bantuan method doSearchMovie() untuk mendapatkan data MovieData
@@ -54,7 +55,7 @@ class DetailMovieViewModelTest {
 
     lateinit var repository: MovieDataRepository
     lateinit var viewModel: DetailMovieViewModel
-    lateinit var listViewModel : ListMovieViewModel
+    lateinit var listViewModel: ListMovieViewModel
     lateinit var dao: MovieDataAccess
 
     val context: Context = ApplicationProvider.getApplicationContext<Context>()

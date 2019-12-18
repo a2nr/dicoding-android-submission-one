@@ -49,7 +49,8 @@ class AlarmReceiver : BroadcastReceiver() {
                         if ((!isAlarmSet(
                                 _context,
                                 TYPE_REMAINDER_RELEASE
-                            ))) {
+                            ))
+                        ) {
                             val alarmManager =
                                 (_context.getSystemService(Context.ALARM_SERVICE) as AlarmManager)
 
@@ -65,10 +66,12 @@ class AlarmReceiver : BroadcastReceiver() {
                                 }
                             } else {
                                 cal.apply {
-                                    set(Calendar.HOUR_OF_DAY,
+                                    set(
+                                        Calendar.HOUR_OF_DAY,
                                         HOUR_RELEASE
                                     )
-                                    set(Calendar.MINUTE,
+                                    set(
+                                        Calendar.MINUTE,
                                         MINUTE_RELEASE
                                     )
                                     set(Calendar.SECOND, 0)
@@ -154,10 +157,12 @@ class AlarmReceiver : BroadcastReceiver() {
                                 }
                             } else {
                                 cal.apply {
-                                    set(Calendar.HOUR_OF_DAY,
+                                    set(
+                                        Calendar.HOUR_OF_DAY,
                                         HOUR_DAILY
                                     )
-                                    set(Calendar.MINUTE,
+                                    set(
+                                        Calendar.MINUTE,
                                         MINUTE_DAILY
                                     )
                                     set(Calendar.SECOND, 0)

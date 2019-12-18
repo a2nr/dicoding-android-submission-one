@@ -6,6 +6,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.assertion.ViewAssertions.matches
@@ -18,10 +19,14 @@ import androidx.test.platform.app.InstrumentationRegistry
 import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
+import io.github.a2nr.jetpakcourse.utils.RecyclerViewItemCheck
+import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+
 
 /* Pengujian untuk modul satu
  * Before : Akan dilakukan pengambilan data terlebih dahulu untuk memverifikasi tampilan data
@@ -51,18 +56,15 @@ class ListMovieFragmentTestModul_1 {
     private val TYPE = arrayListOf("MOVIE", "TV")
     private var curType = TYPE[0]
     private val observer = Observer<List<MovieData>> {
-        when(curType){
+        when (curType) {
             TYPE[0] -> listMovieData = it
             TYPE[1] -> listTvData = it
-            else -> Log.i("[TEST]","What?")
+            else -> Log.i("[TEST]", "What?")
         }
     }
-
-
     private var listMovieData: List<MovieData>? = null
     private var listTvData: List<MovieData>? = null
 
-    @Before
     fun getData() {
         liveListMovieData.observeForever(observer)
         repo.doGetMovies(
@@ -89,6 +91,17 @@ class ListMovieFragmentTestModul_1 {
         liveListMovieData.removeObserver(observer)
     }
 
+    @Before
+    fun setUp() {
+        getData()
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.esspressoTestIdlingResource)
+    }
+
+    @After
+    fun tearsDown() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.esspressoTestIdlingResource)
+    }
+
     @Test
     fun test_1_a() {
         onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
@@ -98,16 +111,8 @@ class ListMovieFragmentTestModul_1 {
 
     @Test
     fun test_1_b() {
-        var flag = false
-        onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
-            while (view.isVisible) {
-                Thread.sleep(100)
-            }
-            flag = true
-        }
-        while (!flag) {
-            Thread.sleep(100)
-        }
+
+        onView(withId(R.id.listMovie)).check(RecyclerViewItemCheck(listMovieData!!.size))
         onView(withText(listMovieData?.get(0)?.title)).check(matches(isDisplayed()))
 
     }
@@ -115,21 +120,7 @@ class ListMovieFragmentTestModul_1 {
     @Test
     fun test_1_c() {
         val MAX_SCROLL = 1
-        var flag = false
         for (i in 0..MAX_SCROLL) {
-            Thread.sleep(2000)
-            onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
-                if (view != null) {
-                    while (view.isVisible) {
-                        Thread.sleep(100)
-                    }
-                }
-                flag = true
-            }
-            while (!flag) {
-                Thread.sleep(100)
-            }
-            Thread.sleep(2000)
             onView(withId(R.id.listMovie))
                 .perform(
                     RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
@@ -137,7 +128,6 @@ class ListMovieFragmentTestModul_1 {
                         click()
                     )
                 )
-            Thread.sleep(2000)
             onView(withText(listMovieData?.get(i)?.title))
                 .check(matches(isDisplayed()))
                 .perform(pressBack())
@@ -146,21 +136,9 @@ class ListMovieFragmentTestModul_1 {
 
     @Test
     fun test_2_a() {
-        var flag = false
         onView(withId(R.id.type_menu)).perform(click())
-        Thread.sleep(500)
         onView(withText("TV Show")).perform(click())
-        Thread.sleep(500)
-
-        onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
-            while (view.isVisible) {
-                Thread.sleep(100)
-            }
-            flag = true
-        }
-        while (!flag) {
-            Thread.sleep(100)
-        }
+        onView(withId(R.id.listMovie)).check(RecyclerViewItemCheck(listTvData!!.size))
         onView(withText(listTvData?.get(0)?.title)).check(matches(isDisplayed()))
 
     }
@@ -168,25 +146,9 @@ class ListMovieFragmentTestModul_1 {
     @Test
     fun test_2_b() {
         val MAX_SCROLL = 1
-        var flag = false
         onView(withId(R.id.type_menu)).perform(click())
-        Thread.sleep(500)
         onView(withText("TV Show")).perform(click())
         for (i in 0..MAX_SCROLL) {
-
-            Thread.sleep(2000)
-            onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
-                if (view != null) {
-                    while (view.isVisible) {
-                        Thread.sleep(100)
-                    }
-                }
-                flag = true
-            }
-            while (!flag) {
-                Thread.sleep(100)
-            }
-            Thread.sleep(2000)
             onView(withId(R.id.listMovie))
                 .perform(
                     RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
@@ -194,7 +156,6 @@ class ListMovieFragmentTestModul_1 {
                         click()
                     )
                 )
-            Thread.sleep(2000)
             onView(withText(listTvData?.get(i)?.title))
                 .check(matches(isDisplayed()))
                 .perform(pressBack())

@@ -59,7 +59,7 @@ class DetailMovieFragment : Fragment() {
                     })
                 }
             floatingActionButton.run { hide();show() }
-            movieData?.let{
+            movieData?.let {
                 viewModel.doCheckMovieExists(it.id)
             }
 
@@ -82,7 +82,7 @@ class DetailMovieFragment : Fragment() {
     fun fabOnClick() {
 
         viewModel.run {
-            movieData?.let{
+            movieData?.let {
                 if (isFavorite) unMarkAsFavorite(it) else markAsFavorite(it)
             }
         }

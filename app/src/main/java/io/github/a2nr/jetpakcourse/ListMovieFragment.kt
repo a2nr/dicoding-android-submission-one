@@ -79,6 +79,7 @@ class ListMovieFragment : Fragment() {
         })
         super.onActivityCreated(savedInstanceState)
     }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

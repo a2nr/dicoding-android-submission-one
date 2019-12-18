@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.MutableLiveData
 import io.github.a2nr.jetpakcourse.BuildConfig
+import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -12,7 +13,8 @@ import org.json.JSONObject
 
 class MovieDataRepository(
     val movieDao: MovieDataAccess?,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO ) {
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+) {
     companion object {
         const val MOVIE: String = "movie"
         const val TV: String = "tv"
@@ -43,20 +45,24 @@ class MovieDataRepository(
     val mutIdExists = MutableLiveData<Boolean>()
 
     fun storeMovie(movieData: MovieData) {
+        EspressoIdlingResource.increment()
         movieDao?.let {
             repoCoroutine.launch {
                 withContext(dispatcher) {
                     it.insert(movieData)
+                    EspressoIdlingResource.decrement()
                 }
             }
         }
     }
 
     fun removeMovie(movieData: MovieData) {
+        EspressoIdlingResource.increment()
         movieDao?.let {
             repoCoroutine.launch {
                 withContext(dispatcher) {
                     it.delete(movieData)
+                    EspressoIdlingResource.decrement()
                 }
             }
         }
@@ -64,12 +70,15 @@ class MovieDataRepository(
 
 
     fun doCheckIsMovieExists(key: Int) {
+        EspressoIdlingResource.increment()
         movieDao?.let {
             repoCoroutine.launch {
                 mutIdExists.value = withContext(dispatcher) {
                     val i = it.getIdfromId(key)
                     Log.i("doCheckIsMovieExists", "$i :: $key ==> ${i == key}")
-                    i == key
+                    (i == key).also {
+                        EspressoIdlingResource.decrement()
+                    }
                 }
             }
         }
@@ -86,11 +95,12 @@ class MovieDataRepository(
     }
 
     fun doGetMovies(mediaType: String, time_window: String, language: String) {
+        EspressoIdlingResource.increment()
         repoCoroutine.launch {
             fetchData(getLinkTrendingMovie(mediaType, time_window, language))
                 ?.let {
                     mutMovieData.value = it
-                }
+                }.also { EspressoIdlingResource.decrement() }
         }
     }
 
@@ -99,14 +109,16 @@ class MovieDataRepository(
             fetchData(getLinkSearchMovie(mediaType, queryTittle, language))
                 ?.let {
                     mutMovieData.value = it
-                }
+                }.also { EspressoIdlingResource.decrement() }
         }
 
     }
 
     fun doGetReleaseMovie(date: String) {
+        EspressoIdlingResource.increment()
         repoCoroutine.launch {
             mutMovieData.value = getReleaseMovie(date)
+                .also { EspressoIdlingResource.decrement() }
         }
     }
 
@@ -114,7 +126,7 @@ class MovieDataRepository(
         return fetchData(getLinkReleaseToday(date))
     }
 
-    fun getJSONData(uri: Uri) : String?{
+    fun getJSONData(uri: Uri): String? {
         return "".run {
             /* Will be connect to server to pull data using API */
             val req = Request.Builder()
@@ -130,111 +142,101 @@ class MovieDataRepository(
         }
     }
 
-    fun parse2MovieData(JSON: String) :  List<MovieData>?{
-        var md: List<MovieData>? = null
-
+    fun parse2MovieData(JSON: String?): List<MovieData>? = JSON?.let { jsonString ->
         /* decode .js into list variable  */
-        if (!JSON.isBlank()) {
-
-            /* try to decode with fix format from server */
+        JSONObject(jsonString).getJSONArray("results").let { jsonArray ->
             try {
-
-                /* get 'results' tag only */
-                val a = JSONObject(JSON).getJSONArray("results")
-
                 /* store in List with bloating decoder code*/
-                md = List(a.length()) { iii ->
-                    val o = a.getJSONObject(iii)
+                List(jsonArray.length()) { iii ->
+                    jsonArray.getJSONObject(iii).let { o ->
 
-                    /* print object in case you fucked */
-                    Log.i("doGetMovies", o.toString())
+                        /* print object in case you fucked */
+                        Log.i("doGetMovies", o.toString())
 
-                    /* Start annoying code */
-                    MovieData().apply {
-                        /* in .js the 'title' tag for movie category,
-                         *            'name'  tag for tv category
-                         * */
-                        this.title = arrayOf("title", "name").run {
-                            this.forEach {
-                                if (o.has(it)) {
-                                    return@run o.getString(it)
+                        /* Start annoying code */
+                        MovieData().apply {
+                            /* in .js the 'title' tag for movie category,
+                             *            'name'  tag for tv category
+                             * */
+                            this.title = arrayOf("title", "name").run {
+                                this.forEach {
+                                    if (o.has(it)) {
+                                        return@run o.getString(it)
+                                    }
                                 }
+                                "unknown"
                             }
-                            "unknown"
-                        }
-                        this.backdropPath = "backdrop_path".run {
-                            if (o.has(this))
-                                o.getString(this)
-                            else
-                                "unknown"
-                        }
-                        this.originalLanguage = "original_language".run {
-                            if (o.has(this))
-                                o.getString(this)
-                            else
-                                "unknown"
-                        }
-                        this.mediaType = "media_type".run {
-                            if (o.has(this))
-                                o.getString(this)
-                            else
-                                "unknown"
-                        }
-                        this.overview = "overview".run {
-                            if (o.has(this))
-                                o.getString(this)
-                            else
-                                "unknown"
-                        }
-                        /* in .js the 'release_date'    tag for movie category,
-                         *            'first_air_date'  tag for tv category
-                         * */
-                        releaseDate = arrayOf("release_date", "first_air_date").run {
-                            this.forEach {
-                                if (o.has(it)) {
-                                    return@run o.getString(it)
+                            this.backdropPath = "backdrop_path".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "unknown"
+                            }
+                            this.originalLanguage = "original_language".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "unknown"
+                            }
+                            this.mediaType = "media_type".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "unknown"
+                            }
+                            this.overview = "overview".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "unknown"
+                            }
+                            /* in .js the 'release_date'    tag for movie category,
+                             *            'first_air_date'  tag for tv category
+                             * */
+                            releaseDate = arrayOf("release_date", "first_air_date").run {
+                                this.forEach {
+                                    if (o.has(it)) {
+                                        return@run o.getString(it)
+                                    }
                                 }
-                            }
-                            "unknown"
-                        }
-                        this.voteAverage = "vote_average".run {
-                            if (o.has(this))
-                                o.getDouble(this).toFloat()
-                            else
-                                0f
-                        }
-                        this.posterPath = "poster_path".run {
-                            if (o.has(this))
-                                o.getString(this)
-                            else
                                 "unknown"
-                        }
-                        this.id = "id".run {
-                            if (o.has(this))
-                                o.getInt(this)
-                            else
-                                -1
+                            }
+                            this.voteAverage = "vote_average".run {
+                                if (o.has(this))
+                                    o.getDouble(this).toFloat()
+                                else
+                                    0f
+                            }
+                            this.posterPath = "poster_path".run {
+                                if (o.has(this))
+                                    o.getString(this)
+                                else
+                                    "unknown"
+                            }
+                            this.id = "id".run {
+                                if (o.has(this))
+                                    o.getInt(this)
+                                else
+                                    -1
+                            }
                         }
                     }
                 }
             }
-
             /* if catch invoked, maybe format of .js is changed */
-            catch (e: Exception) {
+            catch (e: java.lang.Exception) {
                 Log.e("ViewModel", e.toString())
+                null
             }
         }
-        return md
     }
 
-    private suspend fun fetchData(uri: Uri): List<MovieData>? {
 
-        /* pull data from server, wait until done */
-        val tmpString = withContext(dispatcher) {
-            getJSONData(uri)
+    /* pull data from server, wait until done */
+    private suspend fun fetchData(uri: Uri): List<MovieData>? = withContext(dispatcher) {
+        getJSONData(uri)?.let {
+            parse2MovieData(it)
         }
-        return tmpString?.let {
-            parse2MovieData(tmpString)}
 
     }
 }

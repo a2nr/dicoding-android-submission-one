@@ -52,7 +52,7 @@ import kotlin.coroutines.ContinuationInterceptor
 @ExperimentalCoroutinesApi
 class MainCoroutineRule : TestWatcher(), TestCoroutineScope by TestCoroutineScope() {
 
-    val testDispatcher =this.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher
+    val testDispatcher = this.coroutineContext[ContinuationInterceptor] as CoroutineDispatcher
 
     override fun starting(description: Description?) {
         super.starting(description)

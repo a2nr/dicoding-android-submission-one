@@ -85,7 +85,8 @@ class StackImageAppWidgetProvider : AppWidgetProvider() {
                 setTextViewText(
                     R.id.appwidget_text, context.getString(
                         R.string.favorite_movie
-                    ))
+                    )
+                )
                 setRemoteAdapter(R.id.StackViewFavorite, intent)
                 setEmptyView(
                     R.id.StackViewFavorite,

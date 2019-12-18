@@ -1,4 +1,5 @@
 package io.github.a2nr.jetpakcourse.viewmodel
+
 /* ListMovieViewModel test scope
  * 1) doGetMovies()
  *      Pengujian akan dilakukan dengan menggunakan doGetMovies dengan parameter
@@ -78,7 +79,7 @@ class ListMovieViewModelTest {
 
         viewModel.listMovieData.observeForTesting {
             assert(!viewModel.listMovieData.value.isNullOrEmpty())
-            Assert.assertEquals(viewModel.listMovieData.value?.size,20)
+            Assert.assertEquals(viewModel.listMovieData.value?.size, 20)
             viewModel.listMovieData.value?.get(1)?.let {
                 Assert.assertEquals(it.mediaType, "movie")
                 Assert.assertEquals(it.originalLanguage, "en")
@@ -167,14 +168,15 @@ class ListMovieViewModelTest {
 
     @Test
     fun doGetReleaseMovie() {
-        val cal =SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()
-            ).format(Calendar.getInstance().time)
+        val cal = SimpleDateFormat(
+            "yyyy-MM-dd", Locale.getDefault()
+        ).format(Calendar.getInstance().time)
         viewModel.run {
             doGetReleaseMovie(cal)
             listMovieData.observeForTesting {
                 assert(!listMovieData.value.isNullOrEmpty())
                 listMovieData.value?.forEach {
-                    Assert.assertEquals(it.releaseDate,cal)
+                    Assert.assertEquals(it.releaseDate, cal)
                 }
             }
         }
