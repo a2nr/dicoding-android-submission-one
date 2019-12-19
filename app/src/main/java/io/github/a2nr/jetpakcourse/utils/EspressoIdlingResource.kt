@@ -7,6 +7,8 @@ class EspressoIdlingResource {
         private val RESOURCE = "GLOBAL"
         val esspressoTestIdlingResource = CountingIdlingResource(RESOURCE)
         fun increment() = esspressoTestIdlingResource.increment()
-        fun decrement() = esspressoTestIdlingResource.decrement()
+        fun decrement() = with(esspressoTestIdlingResource.isIdleNow) {
+            if (!this) esspressoTestIdlingResource.decrement()
+        }
     }
 }
