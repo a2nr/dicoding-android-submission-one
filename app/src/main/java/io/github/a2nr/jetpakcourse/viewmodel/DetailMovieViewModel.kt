@@ -8,9 +8,15 @@ import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 class DetailMovieViewModel(val repository: MovieDataRepository) : ViewModel() {
 
     val isMovieExists: LiveData<Boolean>
-        get() = repository.mutIdExists
+        get() = repository.mutIsFavorite
 
-    fun markAsFavorite(movieData: MovieData) = repository.storeMovie(movieData)
-    fun unMarkAsFavorite(movieData: MovieData) = repository.removeMovie(movieData)
-    fun doCheckMovieExists(key: Int) = repository.doCheckIsMovieExists(key)
+    fun markAsFavorite(movieData: MovieData) = movieData.run {
+        //TODO ganti ke movieDao?
+        repository.storeMovie(this.let { it.isFavorite = true;it })
+    }
+
+    fun unMarkAsFavorite(movieData: MovieData) =
+        repository.movieDao?.updateFavorite(false, movieData.id)
+
+    fun doCheckIsFavorite(key: Int) = repository.doCheckIsFavorite(key)
 }

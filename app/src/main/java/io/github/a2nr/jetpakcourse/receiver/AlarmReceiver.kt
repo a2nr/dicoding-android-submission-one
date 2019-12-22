@@ -28,19 +28,19 @@ import java.util.*
 class AlarmReceiver : BroadcastReceiver() {
 
     companion object {
-        const val DEBUG_TIME = 2
+        private const val DEBUG_TIME = 2
         const val PENDING_REMAINDER_DAILY_CODE = 1
         const val PENDING_REMAINDER_RELEASE_CODE = 2
         const val TYPE_REMAINDER = "TYPE_REMAINDER"
         const val TYPE_REMAINDER_RELEASE = "TYPE_RELEASE"
-        const val MINUTE_RELEASE = 0
-        const val HOUR_RELEASE = 7
+        private const val MINUTE_RELEASE = 0
+        private const val HOUR_RELEASE = 7
         const val TYPE_REMAINDER_DAILY = "TYPE_DAILY"
-        const val MINUTE_DAILY = 0
-        const val HOUR_DAILY = 8
+        private const val MINUTE_DAILY = 0
+        private const val HOUR_DAILY = 8
         fun createRemainderRelease(context: Context?) {
             context?.let { _context ->
-                PreferenceManager.getDefaultSharedPreferences(_context).let { it ->
+                PreferenceManager.getDefaultSharedPreferences(_context).let {
                     if (it.getBoolean(
                             _context.resources.getString(R.string.key_setting_remaind_release),
                             false
@@ -206,13 +206,13 @@ class AlarmReceiver : BroadcastReceiver() {
             intent: Intent?
         ) {
 
-            val CHANNEL_ID = "Channel_1"
-            val CHANNEL_NAME = "AlarmManager channel"
+            val channelId = "Channel_1"
+            val channelName = "AlarmManager channel"
 
             val notificationManagerCompat =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             val alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            val builder = NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(R.drawable.ic_favorite_24px)
                 .setColor(ContextCompat.getColor(context, android.R.color.transparent))
                 .setVibrate(longArrayOf(1000, 1000, 1000, 1000, 1000))
@@ -235,15 +235,15 @@ class AlarmReceiver : BroadcastReceiver() {
 
                 /* Create or update. */
                 val channel = NotificationChannel(
-                    CHANNEL_ID,
-                    CHANNEL_NAME,
+                    channelId,
+                    channelName,
                     NotificationManager.IMPORTANCE_DEFAULT
                 )
 
                 channel.enableVibration(true)
                 channel.vibrationPattern = longArrayOf(1000, 1000, 1000, 1000, 1000)
 
-                builder.setChannelId(CHANNEL_ID)
+                builder.setChannelId(channelId)
 
                 notificationManagerCompat.createNotificationChannel(channel)
             }
@@ -284,13 +284,12 @@ class AlarmReceiver : BroadcastReceiver() {
 
         // Gunakan metode ini untuk mengecek apakah alarm tersebut sudah terdaftar di alarm manager
         private fun isAlarmSet(context: Context, type: String): Boolean {
-            val a = PendingIntent.getBroadcast(
+            return PendingIntent.getBroadcast(
                 context,
                 (if (type == TYPE_REMAINDER_DAILY) PENDING_REMAINDER_DAILY_CODE else PENDING_REMAINDER_RELEASE_CODE),
                 Intent(context, AlarmReceiver::class.java),
                 PendingIntent.FLAG_NO_CREATE
             ) != null
-            return a
         }
 
         fun cancelAlarm(context: Context, type: String) {

@@ -8,7 +8,8 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = MovieData.TABLE_NAME)
 data class MovieData(
-    @PrimaryKey var id: Int = -1,
+    @PrimaryKey
+    @ColumnInfo(name = ID) var id: Int = -1,
     @ColumnInfo(name = VOTE_AVERAGE) var voteAverage: Float = 0f,
     @ColumnInfo(name = TITLE) var title: String = "",
     @ColumnInfo(name = RELEASE_DATE) var releaseDate: String = "",
@@ -16,9 +17,11 @@ data class MovieData(
     @ColumnInfo(name = BACKDROP_PATH) var backdropPath: String = "",
     @ColumnInfo(name = OVERVIEW) var overview: String = "",
     @ColumnInfo(name = POSTER_PATH) var posterPath: String = "",
-    @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = ""
+    @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = "",
+    @ColumnInfo(name = IS_FAVORITE) var isFavorite: Boolean = false
 ) : Parcelable {
     companion object {
+        const val ID = "id"
         const val NAME = "MovieData"
         const val TABLE_NAME = NAME
         const val VOTE_AVERAGE = "vote_average"
@@ -29,6 +32,7 @@ data class MovieData(
         const val OVERVIEW = "overview"
         const val POSTER_PATH = "poster_path"
         const val MEDIA_TYPE = "media_type"
+        const val IS_FAVORITE = "is_favorite"
 
         @JvmField
         val CREATOR: Parcelable.Creator<MovieData> = object : Parcelable.Creator<MovieData> {

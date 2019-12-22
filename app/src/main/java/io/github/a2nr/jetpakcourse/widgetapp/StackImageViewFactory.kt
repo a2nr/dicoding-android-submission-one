@@ -87,7 +87,7 @@ internal class StackImageViewFactory(
             R.layout.item_widget_movie
         )
             .apply {
-                setImageViewBitmap(R.id.item_widget_image, widgetImage.get(p0))
+                setImageViewBitmap(R.id.item_widget_image, widgetImage[p0])
             }
     }
 

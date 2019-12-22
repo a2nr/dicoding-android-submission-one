@@ -33,7 +33,7 @@ class FavoriteActivity : AppCompatActivity() {
     private var selectedIndex: Int? = null
 
     companion object {
-        val NAME_FAV = "My Favorite"
+        const val NAME_FAV = "My Favorite"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

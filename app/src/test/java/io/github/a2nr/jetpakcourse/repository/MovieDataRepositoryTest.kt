@@ -1,8 +1,16 @@
 package io.github.a2nr.jetpakcourse.repository
 
+import android.content.Context
 import android.os.Build
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.LiveData
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import io.github.a2nr.jetpakcourse.util.MainCoroutineRule
+import io.github.a2nr.jetpakcourse.util.observeForTesting
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import org.junit.Rule
 import org.junit.Test
-
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -32,8 +40,16 @@ import java.util.*
  */
 
 @RunWith(RobolectricTestRunner::class) //this library used to make test easier for mock my repository
-@Config(sdk = [Build.VERSION_CODES.P]) //https://stackoverflow.com/questions/56808485/robolectric-and-android-sdk-29
+@Config(sdk = [Build.VERSION_CODES.O_MR1]) //https://stackoverflow.com/questions/56808485/robolectric-and-android-sdk-29
 class MovieDataRepositoryTest {
+
+    @get:Rule
+    val testRule = InstantTaskExecutorRule()
+
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var mainCoroutineRule = MainCoroutineRule()
+
     @Test
     fun getJSONData() {
         val repo = MovieDataRepository(null)
@@ -112,5 +128,42 @@ class MovieDataRepositoryTest {
         )
         data = s?.let { repo.parse2MovieData(it) }
         assert(!data.isNullOrEmpty())
+    }
+
+
+    private lateinit var repository: MovieDataRepository
+    private val listData: LiveData<List<MovieData>>
+        get() = repository.mutMovieData
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun databaseUpdateAndChange() {
+        repository = MovieDataRepository(
+            Room.databaseBuilder(
+                ApplicationProvider.getApplicationContext<Context>().applicationContext,
+                MovieDatabase::class.java,
+                "movie_database"
+            ).allowMainThreadQueries().fallbackToDestructiveMigration().build().movieDao()
+            , mainCoroutineRule.testDispatcher
+        )
+        repository.doGetMovies("movie", "day", "en")
+        var result: List<MovieData>? = emptyList()
+        listData.observeForTesting {
+            listData.value?.let {
+                result = it
+                repository.movieDao?.insert(it)
+            }
+        }
+        assert(repository.movieDao?.getAll()?.size == result?.size)
+        result?.get(3)?.let {
+            repository.movieDao?.updateFavorite(true, it.id)
+        }
+        repository.movieDao?.delete()
+        assert(result?.get(3)?.id == repository.movieDao?.getAll()?.get(0)?.id)
+        result?.let { repository.movieDao?.insert(it) }
+        assert(repository.movieDao?.getAll()?.size == result?.size)
+        assert(repository.movieDao?.getDataFromId(result?.get(3)!!.id)!!.isFavorite)
+        repository.movieDao?.delete()
+        assert(repository.movieDao?.getDataFromId(result?.get(3)!!.id)!!.isFavorite)
     }
 }

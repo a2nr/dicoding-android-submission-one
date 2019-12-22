@@ -84,7 +84,7 @@ class ItemMovieAdapter(
 
     inner class ViewHolder(private val binding: ItemMovieBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        var pos: Int = 0
+        private var pos: Int = 0
         private var onClickListener: View.OnClickListener
         private var onClick: ((v: View, p: Int) -> Unit)? = null
         private val imageListener = ImageListener()

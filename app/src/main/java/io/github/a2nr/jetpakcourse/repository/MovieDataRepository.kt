@@ -19,9 +19,16 @@ class MovieDataRepository(
         const val MOVIE: String = "movie"
         const val TV: String = "tv"
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
-        fun getLinkTrendingMovie(media_type: String, time_window: String, language: String): Uri =
+        fun getLinkTrendingMovie(
+            media_type: String,
+            time_window: String,
+            language: String,
+            page: Int = 1
+        ): Uri =
             ("https://api.themoviedb.org/3/trending/" +
-                    "$media_type/$time_window?api_key=$API_KEY&language=$language").toUri()
+                    "$media_type/$time_window?api_key=$API_KEY" +
+                    "&language=$language" +
+                    "&page=$page").toUri()
 
         fun getLinkSearchMovie(media_type: String, queryTittle: String, language: String): Uri =
             ("https://api.themoviedb.org/3/search/" +
@@ -42,7 +49,7 @@ class MovieDataRepository(
     private val client = OkHttpClient()
 
     val mutMovieData = MutableLiveData<List<MovieData>>()
-    val mutIdExists = MutableLiveData<Boolean>()
+    val mutIsFavorite = MutableLiveData<Boolean>()
 
     fun storeMovie(movieData: MovieData) {
         EspressoIdlingResource.increment()
@@ -69,14 +76,14 @@ class MovieDataRepository(
     }
 
 
-    fun doCheckIsMovieExists(key: Int) {
+    fun doCheckIsFavorite(key: Int) {
         EspressoIdlingResource.increment()
         movieDao?.let {
             repoCoroutine.launch {
-                mutIdExists.value = withContext(dispatcher) {
-                    val i = it.getIdfromId(key)
-                    Log.i("doCheckIsMovieExists", "$i :: $key ==> ${i == key}")
-                    (i == key).also {
+                mutIsFavorite.value = withContext(dispatcher) {
+                    val i = it.getDataFromId(key)
+                    Log.i("doCheckIsFavorite", "$i.isFavorite")
+                    (i?.isFavorite).also {
                         EspressoIdlingResource.decrement()
                     }
                 }
@@ -88,7 +95,7 @@ class MovieDataRepository(
         movieDao?.let {
             repoCoroutine.launch {
                 mutMovieData.value = withContext(dispatcher) {
-                    it.getAll()
+                    it.getFavorite()
                 }
             }
         }
@@ -155,6 +162,16 @@ class MovieDataRepository(
 
                         /* Start annoying code */
                         MovieData().apply {
+                            this.id = "id".run {
+                                if (o.has(this))
+                                    o.getInt(this)
+                                else
+                                    throw Exception(
+                                        "json no \"id\" tag!!. " +
+                                                "this tag is mandatory, " +
+                                                "database id rely to this tag"
+                                    )
+                            }
                             /* in .js the 'title' tag for movie category,
                              *            'name'  tag for tv category
                              * */
@@ -212,12 +229,6 @@ class MovieDataRepository(
                                     o.getString(this)
                                 else
                                     "unknown"
-                            }
-                            this.id = "id".run {
-                                if (o.has(this))
-                                    o.getInt(this)
-                                else
-                                    -1
                             }
                         }
                     }

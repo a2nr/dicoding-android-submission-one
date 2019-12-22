@@ -41,7 +41,7 @@ import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
-class ListMovieFragmentTestModul_1 {
+class ListMovieFragmentTestModul1 {
     /* https://github.com/android/testing-samples/blob/master/ui/espresso/BasicSample/app/src/androidTest/java/com/example/android/testing/espresso/BasicSample/ChangeTextBehaviorKtTest.kt
      * Katanya ActivityTestRule diganti ActivityScenarioRule
      * */
@@ -53,19 +53,19 @@ class ListMovieFragmentTestModul_1 {
     private val repo = MovieDataRepository(null)
     private val liveListMovieData: LiveData<List<MovieData>>
         get() = repo.mutMovieData
-    private val TYPE = arrayListOf("MOVIE", "TV")
-    private var curType = TYPE[0]
+    private val listType = arrayListOf("MOVIE", "TV")
+    private var curType = listType[0]
     private val observer = Observer<List<MovieData>> {
         when (curType) {
-            TYPE[0] -> listMovieData = it
-            TYPE[1] -> listTvData = it
+            listType[0] -> listMovieData = it
+            listType[1] -> listTvData = it
             else -> Log.i("[TEST]", "What?")
         }
     }
     private var listMovieData: List<MovieData>? = null
     private var listTvData: List<MovieData>? = null
 
-    fun getData() {
+    private fun getData() {
         liveListMovieData.observeForever(observer)
         repo.doGetMovies(
             MovieDataRepository.MOVIE
@@ -77,7 +77,7 @@ class ListMovieFragmentTestModul_1 {
         while (listMovieData == null)
             Thread.sleep(100)
 
-        curType = TYPE[1]
+        curType = listType[1]
 
         repo.doGetMovies(
             MovieDataRepository.TV

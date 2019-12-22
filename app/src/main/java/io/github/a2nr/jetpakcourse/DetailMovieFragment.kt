@@ -60,7 +60,7 @@ class DetailMovieFragment : Fragment() {
                 }
             floatingActionButton.run { hide();show() }
             movieData?.let {
-                viewModel.doCheckMovieExists(it.id)
+                viewModel.doCheckIsFavorite(it.id)
             }
 
         }.root

@@ -27,7 +27,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 import io.github.a2nr.jetpakcourse.viewmodel.ListMovieViewModel as ListMovieViewModel1
 
-class ListMovieFragment : Fragment() {
+class ListMovieFragment :
+    SearchView.OnQueryTextListener, Fragment() {
     companion object {
         const val NOTIFICATION_FEEDBACK = "ListMovieFragment.NOTIFICATION"
     }
@@ -54,30 +55,6 @@ class ListMovieFragment : Fragment() {
             )
         }
         super.onCreate(savedInstanceState)
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        viewModel.listMovieData.observe(this, Observer {
-            binding.apply {
-                val adapter = ItemMovieAdapter(this@ListMovieFragment.requireContext())
-                listMovie.visibility = RecyclerView.VISIBLE
-                progressBarDataReady.visibility = ProgressBar.INVISIBLE
-                onClickItemView = { view, pos ->
-                    Log.i("ListMovieFragment", "Item Clicked at $pos")
-                    view.findNavController().navigate(
-                        ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
-                            lMd[pos]
-                        )
-                    )
-                }
-                listMovie.adapter = adapter.apply {
-                    setCallBack(onClickItemView)
-                    submitData(it)
-                }
-            }
-            lMd = it
-        })
-        super.onActivityCreated(savedInstanceState)
     }
 
     override fun onCreateView(
@@ -109,6 +86,38 @@ class ListMovieFragment : Fragment() {
         return binding.root
     }
 
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        viewModel.listMovieData.observe(this, Observer {
+            binding.apply {
+                val adapter = ItemMovieAdapter(this@ListMovieFragment.requireContext())
+                listMovie.visibility = RecyclerView.VISIBLE
+                progressBarDataReady.visibility = ProgressBar.INVISIBLE
+                onClickItemView = { view, pos ->
+                    Log.i("ListMovieFragment", "Item Clicked at $pos")
+                    view.findNavController().navigate(
+                        ListMovieFragmentDirections.actionListMovieFragmentToDetailMovieFragment(
+                            lMd[pos]
+                        )
+                    )
+                }
+                listMovie.adapter = adapter.apply {
+                    setCallBack(onClickItemView)
+                    submitData(it)
+                }
+            }
+            lMd = it
+        })
+        binding.listMovie.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!recyclerView.canScrollVertically(1)) {
+                    TODO("add event scroll here")
+                }
+            }
+        })
+        super.onActivityCreated(savedInstanceState)
+    }
+
     override fun onResume() {
         if (!viewModel.listMovieData.value.isNullOrEmpty()) {
             binding.apply {
@@ -131,6 +140,27 @@ class ListMovieFragment : Fragment() {
         }
     }
 
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        Log.i("onQueryTextSubmit", "triggered?")
+        query?.apply {
+            viewModel.doSearchMovie(
+                with(viewModel.typeTag) {
+                    when (this) {
+                        R.id.type_tv_show -> MovieDataRepository.TV
+                        else -> MovieDataRepository.MOVIE
+                    }
+                },
+                query, resources.getString(R.string.lang_code)
+            )
+        }
+        return true
+    }
+
+    override fun onQueryTextChange(newText: String?): Boolean {
+        Log.i("onQueryTextChange", "triggered?")
+        return true
+    }
+
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.main_menu, menu)
         typeMenu = menu.findItem(R.id.type_menu)
@@ -141,30 +171,7 @@ class ListMovieFragment : Fragment() {
             menu.performIdentifierAction(it, 0)
             it
         }
-        (menu.findItem(R.id.search).actionView as SearchView)
-            .setOnQueryTextListener(object :
-                SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String?): Boolean {
-                    Log.i("onQueryTextSubmit", "triggered?")
-                    query?.apply {
-                        viewModel.doSearchMovie(
-                            run {
-                                when (viewModel.typeTag) {
-                                    R.id.type_tv_show -> MovieDataRepository.TV
-                                    else -> MovieDataRepository.MOVIE
-                                }
-                            },
-                            query, resources.getString(R.string.lang_code)
-                        )
-                    }
-                    return true
-                }
-
-                override fun onQueryTextChange(newText: String?): Boolean {
-                    Log.i("onQueryTextChange", "triggered?")
-                    return true
-                }
-            })
+        (menu.findItem(R.id.search).actionView as SearchView).setOnQueryTextListener(this)
         super.onCreateOptionsMenu(menu, inflater)
     }
 

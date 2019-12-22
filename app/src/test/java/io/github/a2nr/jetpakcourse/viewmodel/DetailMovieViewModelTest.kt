@@ -53,12 +53,12 @@ class DetailMovieViewModelTest {
     @get:Rule
     var mainCoroutineRule = MainCoroutineRule()
 
-    lateinit var repository: MovieDataRepository
-    lateinit var viewModel: DetailMovieViewModel
-    lateinit var listViewModel: ListMovieViewModel
-    lateinit var dao: MovieDataAccess
+    private lateinit var repository: MovieDataRepository
+    private lateinit var viewModel: DetailMovieViewModel
+    private lateinit var listViewModel: ListMovieViewModel
+    private lateinit var dao: MovieDataAccess
 
-    val context: Context = ApplicationProvider.getApplicationContext<Context>()
+    private val context: Context = ApplicationProvider.getApplicationContext<Context>()
 
     @ExperimentalCoroutinesApi
     @Before
@@ -135,7 +135,7 @@ class DetailMovieViewModelTest {
                 id = listMovieData.value!![0].id
             }
             viewModel.run {
-                doCheckMovieExists(id)
+                doCheckIsFavorite(id)
                 isMovieExists.observeForever {
                     assert(it)
                 }
@@ -146,7 +146,7 @@ class DetailMovieViewModelTest {
                 assert(listMovieData.value.isNullOrEmpty())
             }
             viewModel.run {
-                doCheckMovieExists(id)
+                doCheckIsFavorite(id)
                 isMovieExists.observeForever {
                     assert(!it)
                 }
