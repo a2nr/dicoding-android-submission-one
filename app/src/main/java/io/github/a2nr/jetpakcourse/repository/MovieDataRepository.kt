@@ -3,8 +3,12 @@ package io.github.a2nr.jetpakcourse.repository
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import io.github.a2nr.jetpakcourse.BuildConfig
+import io.github.a2nr.jetpakcourse.helper.GetMoviesParams
 import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 import kotlinx.coroutines.*
 import okhttp3.OkHttpClient
@@ -29,9 +33,14 @@ class MovieDataRepository(
                     "&language=$language" +
                     "&page=$page").toUri()
 
-        fun getLinkSearchMovie(media_type: String, queryTittle: String, language: String): Uri =
+        fun getLinkSearchMovie(
+            media_type: String,
+            queryTittle: String,
+            language: String,
+            page: Int = 1
+        ): Uri =
             ("https://api.themoviedb.org/3/search/" +
-                    "$media_type?api_key=$API_KEY&language=$language&query=$queryTittle").toUri()
+                    "$media_type?api_key=$API_KEY&language=$language&query=$queryTittle&page=$page").toUri()
 
         fun getLinkReleaseToday(date: String): Uri =
             ("https://api.themoviedb.org/3/discover/movie?api_key=$API_KEY" +
@@ -50,19 +59,15 @@ class MovieDataRepository(
     val mutMovieData = MutableLiveData<List<MovieData>>()
     val mutIsFavorite = MutableLiveData<Boolean>()
 
-    private fun <T> launchInBackground(
-        runIt: (suspend () -> T),
-        returnIt: (suspend (T) -> Unit)?) {
-
-        EspressoIdlingResource.increment()
-        repoCoroutine.launch {
-            val ret = withContext(dispatcher) {
-                runIt().also {
-                    EspressoIdlingResource.decrement()
-                }
-            }
-            returnIt?.let { it(ret) }
-        }
+    fun pageListMovieBuilder(getMovieParams: GetMoviesParams): LiveData<PagedList<MovieData>> {
+        val config = PagedList.Config.Builder()
+            .setPageSize(20)
+            .setEnablePlaceholders(true)
+            .setPrefetchDistance(2)
+            .build()
+        return LivePagedListBuilder(
+            MovieDataDataSource(this, getMovieParams).Factory(), config
+        ).build()
     }
 
     fun storeMovie(movieData: MovieData) {
@@ -99,7 +104,9 @@ class MovieDataRepository(
         launchInBackground(
             {
                 movieDao?.getFavorite()
-            }, null
+            }, {
+                mutMovieData.value = it
+            }
         )
     }
 
@@ -113,27 +120,23 @@ class MovieDataRepository(
             })
     }
 
-    fun doSearchMovies(mediaType: String, queryTittle: String, language: String) {
-        launchInBackground(
-            {
-                fetchData(getLinkSearchMovie(mediaType, queryTittle, language))
-            },
-            {
-                mutMovieData.value = it
-            })
-    }
-
-    fun doGetReleaseMovie(date: String) {
-        launchInBackground(
-            {
-                getReleaseMovie(date)
-            },
-            {
-                mutMovieData.value = it
-            }
-        )
-    }
     fun getReleaseMovie(date: String): List<MovieData>? = fetchData(getLinkReleaseToday(date))
+
+    fun <T> launchInBackground(
+        runIt: (suspend () -> T),
+        returnIt: (suspend (T) -> Unit)?
+    ) {
+
+        EspressoIdlingResource.increment()
+        repoCoroutine.launch {
+            val ret = withContext(dispatcher) {
+                runIt().also {
+                    EspressoIdlingResource.decrement()
+                }
+            }
+            returnIt?.let { it(ret) }
+        }
+    }
 
     fun getJSONData(uri: Uri): String? {
         return "".run {
@@ -152,78 +155,57 @@ class MovieDataRepository(
     }
 
     /* pull data from server, wait until done */
-    private
-    fun fetchData(uri: Uri): List<MovieData>? = getJSONData(uri)?.let { parse2MovieData(it) }
+    fun fetchData(uri: Uri): List<MovieData>? =
+        getJSONData(uri)?.let { parse2MovieData(it) }
 
-    fun parse2MovieData(JSON: String?): List<MovieData>? = JSON?.let { jsonString ->
-        var page = 0
-        try {
-            /* decode .js into list variable  */
-            JSONObject(jsonString)
-                .also {
-                    if (it.has("page"))
-                        page = it.getInt("page")
-                }.getJSONArray("results").let { jsonArray ->
-                    /* store in List with bloating decoder code*/
-                    List(jsonArray.length()) { iii ->
-                        jsonArray.getJSONObject(iii).let { o ->
+    fun fetchData(
+        uri: Uri,
+        dataInfoCallback: ((totalPage: Int, page: Int, data: List<MovieData>?) -> Unit)
+    ) = getJSONData(uri)?.let {
+        parse2MovieData(it) { totalPage, page, data ->
+            dataInfoCallback(totalPage, page, data)
+        }
+    }
 
-                            /* print object in case you fucked */
-                            Log.i("doGetMovies", o.toString())
+    fun parse2MovieData(
+        JSON: String?,
+        dataInfoCallback: ((totalPage: Int, page: Int, data: List<MovieData>?) -> Unit)? = null
+    ): List<MovieData>? =
+        JSON?.let { jsonString ->
+            var page = 0
+            var totalPage = 0
+            try {
+                /* decode .js into list variable  */
+                JSONObject(jsonString)
+                    .also {
+                        if (it.has("page"))
+                            page = it.getInt("page")
+                        if (it.has("total_pages"))
+                            totalPage = it.getInt("total_pages")
+                    }.getJSONArray("results").let { jsonArray ->
+                        /* store in List with bloating decoder code*/
+                        List(jsonArray.length()) { iii ->
+                            jsonArray.getJSONObject(iii).let { o ->
 
-                            /* Start annoying code */
-                            MovieData().apply {
-                                this.page = page
-                                this.id = "id".run {
-                                    if (o.has(this))
-                                        o.getInt(this)
-                                    else
-                                        throw Exception(
-                                            "json no \"id\" tag!!. " +
-                                                    "this tag is mandatory, " +
-                                                    "database id rely to this tag"
-                                        )
-                                }
-                                /* in .js the 'title' tag for movie category,
-                                 *            'name'  tag for tv category
-                                 * */
-                                this.title = arrayOf("title", "name").run {
-                                    this.forEach {
-                                        if (o.has(it)) {
-                                            return@run o.getString(it)
-                                        }
+                                /* print object in case you fucked */
+                                Log.i("doGetMovies", o.toString())
+
+                                /* Start annoying code */
+                                MovieData().apply {
+                                    this.id = "id".run {
+                                        if (o.has(this))
+                                            o.getInt(this)
+                                        else
+                                            throw Exception(
+                                                "json no \"id\" tag!!. " +
+                                                        "this tag is mandatory, " +
+                                                        "database id rely to this tag"
+                                            )
                                     }
-                                    "unknown"
-                                }
-                                this.backdropPath = "backdrop_path".run {
-                                    if (o.has(this))
-                                        o.getString(this)
-                                    else
-                                        "unknown"
-                                }
-                                this.originalLanguage = "original_language".run {
-                                    if (o.has(this))
-                                        o.getString(this)
-                                    else
-                                        "unknown"
-                                }
-                                this.mediaType = "media_type".run {
-                                    if (o.has(this))
-                                        o.getString(this)
-                                    else
-                                        "unknown"
-                                }
-                                this.overview = "overview".run {
-                                    if (o.has(this))
-                                        o.getString(this)
-                                    else
-                                        "unknown"
-                                }
-                                /* in .js the 'release_date'    tag for movie category,
-                                 *            'first_air_date'  tag for tv category
-                                 * */
-                                releaseDate =
-                                    arrayOf("release_date", "first_air_date").run {
+                                    /* in .js the 'title' tag for movie category,
+                                     *            'name'  tag for tv category
+                                     * */
+                                    this.title = arrayOf("title", "name").run {
                                         this.forEach {
                                             if (o.has(it)) {
                                                 return@run o.getString(it)
@@ -231,28 +213,66 @@ class MovieDataRepository(
                                         }
                                         "unknown"
                                     }
-                                this.voteAverage = "vote_average".run {
-                                    if (o.has(this))
-                                        o.getDouble(this).toFloat()
-                                    else
-                                        0f
-                                }
-                                this.posterPath = "poster_path".run {
-                                    if (o.has(this))
-                                        o.getString(this)
-                                    else
-                                        "unknown"
+                                    this.backdropPath = "backdrop_path".run {
+                                        if (o.has(this))
+                                            o.getString(this)
+                                        else
+                                            "unknown"
+                                    }
+                                    this.originalLanguage = "original_language".run {
+                                        if (o.has(this))
+                                            o.getString(this)
+                                        else
+                                            "unknown"
+                                    }
+                                    this.mediaType = "media_type".run {
+                                        if (o.has(this))
+                                            o.getString(this)
+                                        else
+                                            "unknown"
+                                    }
+                                    this.overview = "overview".run {
+                                        if (o.has(this))
+                                            o.getString(this)
+                                        else
+                                            "unknown"
+                                    }
+                                    /* in .js the 'release_date'    tag for movie category,
+                                     *            'first_air_date'  tag for tv category
+                                     * */
+                                    releaseDate =
+                                        arrayOf("release_date", "first_air_date").run {
+                                            this.forEach {
+                                                if (o.has(it)) {
+                                                    return@run o.getString(it)
+                                                }
+                                            }
+                                            "unknown"
+                                        }
+                                    this.voteAverage = "vote_average".run {
+                                        if (o.has(this))
+                                            o.getDouble(this).toFloat()
+                                        else
+                                            0f
+                                    }
+                                    this.posterPath = "poster_path".run {
+                                        if (o.has(this))
+                                            o.getString(this)
+                                        else
+                                            "unknown"
+                                    }
                                 }
                             }
                         }
+                    }.also { data ->
+                        dataInfoCallback?.let { it(totalPage, page, data) }
                     }
-                }
+            }
+            /* if catch invoked, maybe format of .js is changed */
+            catch (e: java.lang.Exception) {
+                Log.e("ViewModel", e.toString())
+                null
+            }
         }
-        /* if catch invoked, maybe format of .js is changed */
-        catch (e: java.lang.Exception) {
-            Log.e("ViewModel", e.toString())
-            null
-        }
-    }
 }
 

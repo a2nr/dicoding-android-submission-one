@@ -20,6 +20,34 @@ data class MovieData(
     @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = "",
     @ColumnInfo(name = IS_FAVORITE) var isFavorite: Boolean = false
 ) : Parcelable {
+    constructor(source: Parcel) : this(
+        source.readInt(),
+        source.readFloat(),
+        source.readString()?:"",
+        source.readString()?:"",
+        source.readString()?:"",
+        source.readString()?:"",
+        source.readString()?:"",
+        source.readString()?:"",
+        source.readString()?:"",
+        1 == source.readInt()
+    )
+
+    override fun describeContents() = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
+        writeInt(id)
+        writeFloat(voteAverage)
+        writeString(title)
+        writeString(releaseDate)
+        writeString(originalLanguage)
+        writeString(backdropPath)
+        writeString(overview)
+        writeString(posterPath)
+        writeString(mediaType)
+        writeInt((if (isFavorite) 1 else 0))
+    }
+
     companion object {
         const val ID = "id"
         const val NAME = "MovieData"
@@ -40,31 +68,4 @@ data class MovieData(
             override fun newArray(size: Int): Array<MovieData?> = arrayOfNulls(size)
         }
     }
-
-    constructor(source: Parcel) : this(
-        source.readInt(),
-        source.readFloat(),
-        source.readString()!!,
-        source.readString()!!,
-        source.readString()!!,
-        source.readString()!!,
-        source.readString()!!,
-        source.readString()!!,
-        source.readString()!!
-    )
-
-    override fun describeContents() = 0
-
-    override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
-        writeInt(id)
-        writeFloat(voteAverage)
-        writeString(title)
-        writeString(releaseDate)
-        writeString(originalLanguage)
-        writeString(backdropPath)
-        writeString(overview)
-        writeString(posterPath)
-        writeString(mediaType)
-    }
-
 }

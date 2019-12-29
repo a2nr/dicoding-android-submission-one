@@ -3,20 +3,20 @@ package io.github.a2nr.jetpakcourse
 import android.util.Log
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.core.view.isVisible
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.Observer
+import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.pressBack
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions
+import androidx.test.espresso.matcher.RootMatchers
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
+import io.github.a2nr.jetpakcourse.adapter.ItemMovieViewHolder
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
@@ -51,44 +51,27 @@ class ListMovieFragmentTestModul1 {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val repo = MovieDataRepository(null)
-    private val liveListMovieData: LiveData<List<MovieData>>
-        get() = repo.mutMovieData
-    private val listType = arrayListOf("MOVIE", "TV")
-    private var curType = listType[0]
-    private val observer = Observer<List<MovieData>> {
-        when (curType) {
-            listType[0] -> listMovieData = it
-            listType[1] -> listTvData = it
-            else -> Log.i("[TEST]", "What?")
-        }
-    }
+    private val listType = arrayListOf(MovieDataRepository.MOVIE, MovieDataRepository.TV)
     private var listMovieData: List<MovieData>? = null
     private var listTvData: List<MovieData>? = null
 
     private fun getData() {
-        liveListMovieData.observeForever(observer)
-        repo.doGetMovies(
-            MovieDataRepository.MOVIE
-            ,
-            "day"
-            ,
-            InstrumentationRegistry.getInstrumentation().targetContext.resources.getString(R.string.lang_code)
-        )
-        while (listMovieData == null)
-            Thread.sleep(100)
-
-        curType = listType[1]
-
-        repo.doGetMovies(
-            MovieDataRepository.TV
-            ,
-            "day"
-            ,
-            InstrumentationRegistry.getInstrumentation().targetContext.resources.getString(R.string.lang_code)
-        )
-        while (listTvData == null)
-            Thread.sleep(100)
-        liveListMovieData.removeObserver(observer)
+        listType.forEach {
+            repo.fetchData(
+                MovieDataRepository.getLinkTrendingMovie(
+                    it,
+                    InstrumentationRegistry.getInstrumentation().targetContext.resources.getString(R.string.lang_code)
+                )
+            ) { _, _, data ->
+                data?.let {
+                    when (it[0].mediaType) {
+                        listType[0] -> listMovieData = it
+                        listType[1] -> listTvData = it
+                        else -> Log.i("[TEST]", "What?")
+                    }
+                }
+            }
+        }
     }
 
     @Before
@@ -104,15 +87,22 @@ class ListMovieFragmentTestModul1 {
 
     @Test
     fun test_1_a() {
-        onView(withId(R.id.progressBarDataReady)).check { view, noViewFoundException ->
+        onView(withId(R.id.progressBarDataReady)).check { view, _ ->
             assert(view.isVisible)
         }
     }
 
     @Test
     fun test_1_b() {
-
-        onView(withId(R.id.listMovie)).check(RecyclerViewItemCheck(listMovieData!!.size))
+        onView(withId(R.id.progressBarDataReady)).inRoot(RootMatchers.isFocusable()).check { view, _ ->
+            assert(view.isVisible)
+        }
+        onView(withId(R.id.listMovie)).check{ view, noViewFoundException ->
+            Log.i("Chect listMovie","$noViewFoundException")
+            val recyclerView = view as RecyclerView
+            assert(recyclerView.adapter?.itemCount == listMovieData!!.size)
+        }
+//        onView(withId(R.id.listMovie)).RecyclerViewItemCheck(listMovieData!!.size))
         onView(withText(listMovieData?.get(0)?.title)).check(matches(isDisplayed()))
 
     }
@@ -123,7 +113,7 @@ class ListMovieFragmentTestModul1 {
         for (i in 0..MAX_SCROLL) {
             onView(withId(R.id.listMovie))
                 .perform(
-                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
+                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieViewHolder>(
                         i,
                         click()
                     )
@@ -151,7 +141,7 @@ class ListMovieFragmentTestModul1 {
         for (i in 0..MAX_SCROLL) {
             onView(withId(R.id.listMovie))
                 .perform(
-                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
+                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieViewHolder>(
                         i,
                         click()
                     )

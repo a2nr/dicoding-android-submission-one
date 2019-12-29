@@ -29,7 +29,6 @@ class FavoriteActivity : AppCompatActivity() {
     private val muteListMovieData = MutableLiveData<List<MovieData>>()
     private val ldListMovieData: LiveData<List<MovieData>>
         get() = muteListMovieData
-    private var onClickItemView: ((v: View, p: Int) -> Unit)? = null
     private var selectedIndex: Int? = null
 
     companion object {
@@ -58,38 +57,31 @@ class FavoriteActivity : AppCompatActivity() {
                             GridLayoutManager(this@FavoriteActivity, 2)
                     }
                 }
-                onClickItemView = { _, p ->
-                    onClickItem(p)
-                }
                 adapter =
-                    ItemMovieAdapter(this@FavoriteActivity)
-                        .apply {
-                            setCallBack(onClickItemView)
-                            submitData(it)
-                        }
+                    ItemMovieAdapter(this@FavoriteActivity, it) { _, data ->
+                        onClickItem(data)
+                    }
             }
             it.forEach { movie ->
                 Log.i("Favorite", movie.toString())
             }
         })
         fab.setOnClickListener {
-            if (selectedIndex != null) {
-                ldListMovieData.value?.get(selectedIndex!!)?.id?.let {
-                    val content = Uri.Builder().scheme(MovieDataProvider.SCHEME)
-                        .authority(MovieDataProvider.AUTHORITY)
-                        .appendPath(MovieData.NAME)
-                        .appendPath(it.toString())
-                        .build()
-                    mainCoroutine.launch {
-                        withContext(Dispatchers.IO) {
-                            contentResolver.delete(content, null, null)
-                            StackImageAppWidgetProvider.sendRefresh(this@FavoriteActivity)
-                            getData()
-                        }
+            ldListMovieData.value?.get(selectedIndex!!)?.id?.let {
+                val content = Uri.Builder().scheme(MovieDataProvider.SCHEME)
+                    .authority(MovieDataProvider.AUTHORITY)
+                    .appendPath(MovieData.NAME)
+                    .appendPath(it.toString())
+                    .build()
+                mainCoroutine.launch {
+                    withContext(Dispatchers.IO) {
+                        contentResolver.delete(content, null, null)
+                        StackImageAppWidgetProvider.sendRefresh(this@FavoriteActivity)
+                        getData()
                     }
-                    updateFabIcon(false)
-                    goToListView()
                 }
+                updateFabIcon(false)
+                goToListView()
             }
         }
 
@@ -116,10 +108,9 @@ class FavoriteActivity : AppCompatActivity() {
         selectedIndex = null
     }
 
-    private fun onClickItem(index: Int) {
+    private fun onClickItem(data: MovieData?) {
         layout_list_movie.apply {
-            val mov = ldListMovieData.value?.get(index)
-            mov?.let {
+            data?.let {
                 this@FavoriteActivity.apply {
                     media_type.text = it.mediaType
                     overview.text = it.overview
@@ -138,7 +129,6 @@ class FavoriteActivity : AppCompatActivity() {
                         .into(posterImageView)
                     layout_detail_movie.visibility = View.VISIBLE
                     toolbar_title.visibility = View.INVISIBLE
-                    selectedIndex = index
                 }
                 visibility = View.GONE
                 updateFabIcon(true)

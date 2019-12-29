@@ -1,6 +1,7 @@
 package io.github.a2nr.jetpakcourse.repository
 
 import android.database.Cursor
+import androidx.paging.DataSource
 import androidx.room.*
 
 @Dao
@@ -35,6 +36,9 @@ interface MovieDataAccess {
 
     @Query("SELECT * FROM " + MovieData.NAME)
     fun getAll(): List<MovieData>
+
+    @Query("SELECT * FROM " + MovieData.NAME + " ORDER BY "+ MovieData.VOTE_AVERAGE +" DESC")
+    fun getDataSource(): DataSource.Factory<Int, MovieData>
 
     @Query("SELECT * FROM " + MovieData.NAME)
     fun getAllCursor(): Cursor?
