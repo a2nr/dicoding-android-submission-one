@@ -16,7 +16,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
-import io.github.a2nr.jetpakcourse.adapter.ItemMovieAdapter
+import io.github.a2nr.jetpakcourse.adapter.ItemMovieViewHolder
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
@@ -123,7 +123,7 @@ class ListMovieFragmentTestModul_1 {
         for (i in 0..MAX_SCROLL) {
             onView(withId(R.id.listMovie))
                 .perform(
-                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
+                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieViewHolder>(
                         i,
                         click()
                     )
@@ -151,7 +151,7 @@ class ListMovieFragmentTestModul_1 {
         for (i in 0..MAX_SCROLL) {
             onView(withId(R.id.listMovie))
                 .perform(
-                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieAdapter.ViewHolder>(
+                    RecyclerViewActions.actionOnItemAtPosition<ItemMovieViewHolder>(
                         i,
                         click()
                     )
