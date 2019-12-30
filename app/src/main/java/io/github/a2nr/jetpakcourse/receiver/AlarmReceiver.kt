@@ -21,7 +21,10 @@ import io.github.a2nr.jetpakcourse.MainActivity
 import io.github.a2nr.jetpakcourse.R
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -346,14 +349,14 @@ class AlarmReceiver : BroadcastReceiver() {
                         ListMovieFragment.NOTIFICATION_FEEDBACK
                     dat.observeForever(obs)
                     alarmCoroutine.launch {
-                        mut.value = withContext(Dispatchers.IO) {
-                            repo.getReleaseMovie(
+                        mut.value = repo.fetchData(
+                            MovieDataRepository.getLinkReleaseToday(
                                 SimpleDateFormat(
                                     "yyyy-MM-dd",
                                     Locale.getDefault()
                                 ).format(Calendar.getInstance().time)
                             )
-                        }
+                        )
                     }
                 }
                 TYPE_REMAINDER_DAILY -> {

@@ -23,23 +23,20 @@
 
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.core.widget.NestedScrollView
-            android:id="@+id/scrollViewListMovie"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-
-            app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="match_parent"
+                android:nestedScrollingEnabled="false"
+
+                app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
 
                 <ProgressBar
                     android:id="@+id/progressBarDataReady"
-                    android:layout_width="0dp"
-                    android:layout_height="193dp"
-                    android:layout_margin="@dimen/activity_horizontal_margin"
+                    android:layout_width="77dp"
+                    android:layout_height="77dp"
                     android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -47,8 +44,11 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/listMovie"
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_marginBottom="8dp"
+                    android:nestedScrollingEnabled="false"
                     android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
@@ -56,7 +56,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-        </androidx.core.widget.NestedScrollView>
+<!--        </androidx.core.widget.NestedScrollView>-->
 
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>

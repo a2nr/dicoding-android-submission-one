@@ -85,7 +85,7 @@ class DetailMovieViewModelTest {
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
-                    listMovieData.value!![0].title,
+                    listMovieData.value!![0]!!.title,
                     "Neon Genesis Evangelion: The End of Evangelion"
                 )
             }
@@ -104,11 +104,11 @@ class DetailMovieViewModelTest {
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
-                    listMovieData.value!![0].title,
+                    listMovieData.value!![0]!!.title,
                     "Neon Genesis Evangelion: The End of Evangelion"
                 )
             }
-            viewModel.unMarkAsFavorite(listMovieData.value!![0])
+            viewModel.unMarkAsFavorite(listMovieData.value!![0]!!)
             doGetFavorite()
             listMovieData.observeForTesting {
                 assert(listMovieData.value.isNullOrEmpty())
@@ -129,10 +129,10 @@ class DetailMovieViewModelTest {
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
-                    listMovieData.value!![0].title,
+                    listMovieData.value!![0]!!.title,
                     "Neon Genesis Evangelion: The End of Evangelion"
                 )
-                id = listMovieData.value!![0].id
+                id = listMovieData.value!![0]!!.id
             }
             viewModel.run {
                 doCheckMovieExists(id)
@@ -140,7 +140,7 @@ class DetailMovieViewModelTest {
                     assert(it)
                 }
             }
-            viewModel.unMarkAsFavorite(listMovieData.value!![0])
+            viewModel.unMarkAsFavorite(listMovieData.value!![0]!!)
             doGetFavorite()
             listMovieData.observeForTesting {
                 assert(listMovieData.value.isNullOrEmpty())

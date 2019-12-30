@@ -132,8 +132,8 @@ class ListMovieViewModelTest {
             doSearchMovie("tv", "stein gate", "en")
             listMovieData.observeForTesting {
                 listMovieData.value?.let {
-                    detailViewModel.markAsFavorite(it[0])
-                    detailViewModel.markAsFavorite(it[1])
+                    detailViewModel.markAsFavorite(it[0]!!)
+                    detailViewModel.markAsFavorite(it[1]!!)
                 }
             }
             viewModel.doGetFavorite()
@@ -156,14 +156,14 @@ class ListMovieViewModelTest {
             }
         }
         Assert.assertEquals(viewModel.listMovieData.value!!.size, 4)
-        Assert.assertEquals(viewModel.listMovieData.value!![0].title, "Neon Genesis Evangelion")
-        Assert.assertEquals(viewModel.listMovieData.value!![0].originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![1].title, "Steins;Gate")
-        Assert.assertEquals(viewModel.listMovieData.value!![1].originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![2].title, "Steins;Gate 0")
-        Assert.assertEquals(viewModel.listMovieData.value!![2].originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![3].title, "Interstellar")
-        Assert.assertEquals(viewModel.listMovieData.value!![3].originalLanguage, "en")
+        Assert.assertEquals(viewModel.listMovieData.value!![0]!!.title, "Neon Genesis Evangelion")
+        Assert.assertEquals(viewModel.listMovieData.value!![0]!!.originalLanguage, "ja")
+        Assert.assertEquals(viewModel.listMovieData.value!![1]!!.title, "Steins;Gate")
+        Assert.assertEquals(viewModel.listMovieData.value!![1]!!.originalLanguage, "ja")
+        Assert.assertEquals(viewModel.listMovieData.value!![2]!!.title, "Steins;Gate 0")
+        Assert.assertEquals(viewModel.listMovieData.value!![2]!!.originalLanguage, "ja")
+        Assert.assertEquals(viewModel.listMovieData.value!![3]!!.title, "Interstellar")
+        Assert.assertEquals(viewModel.listMovieData.value!![3]!!.originalLanguage, "en")
     }
 
     @Test

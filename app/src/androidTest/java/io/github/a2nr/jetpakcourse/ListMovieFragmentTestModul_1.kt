@@ -21,6 +21,9 @@ import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 import io.github.a2nr.jetpakcourse.utils.RecyclerViewItemCheck
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -51,44 +54,34 @@ class ListMovieFragmentTestModul_1 {
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
     private val repo = MovieDataRepository(null)
-    private val liveListMovieData: LiveData<List<MovieData>>
-        get() = repo.mutMovieData
-    private val TYPE = arrayListOf("MOVIE", "TV")
-    private var curType = TYPE[0]
-    private val observer = Observer<List<MovieData>> {
-        when (curType) {
-            TYPE[0] -> listMovieData = it
-            TYPE[1] -> listTvData = it
-            else -> Log.i("[TEST]", "What?")
-        }
-    }
     private var listMovieData: List<MovieData>? = null
     private var listTvData: List<MovieData>? = null
 
     fun getData() {
-        liveListMovieData.observeForever(observer)
-        repo.doGetMovies(
-            MovieDataRepository.MOVIE
-            ,
-            "day"
-            ,
-            InstrumentationRegistry.getInstrumentation().targetContext.resources.getString(R.string.lang_code)
-        )
-        while (listMovieData == null)
-            Thread.sleep(100)
-
-        curType = TYPE[1]
-
-        repo.doGetMovies(
-            MovieDataRepository.TV
-            ,
-            "day"
-            ,
-            InstrumentationRegistry.getInstrumentation().targetContext.resources.getString(R.string.lang_code)
-        )
-        while (listTvData == null)
-            Thread.sleep(100)
-        liveListMovieData.removeObserver(observer)
+        var onLoading = false
+        repo.repoCoroutine.launch {
+            onLoading = withContext(Dispatchers.IO) {
+                var data = repo.getJSONData(
+                    MovieDataRepository.getLinkTrendingMovie(
+                        MovieDataRepository.MOVIE,
+                        "day",
+                        "en"
+                    )
+                ).let { repo.parse2MovieData(it) }
+                listMovieData = data
+                data = repo.getJSONData(
+                    MovieDataRepository.getLinkTrendingMovie(
+                        MovieDataRepository.TV,
+                        "day",
+                        "en"
+                    )
+                ).let { repo.parse2MovieData(it) }
+                listTvData = data
+                true
+            }
+        }
+        while (!onLoading)
+            Thread.sleep(1000)
     }
 
     @Before

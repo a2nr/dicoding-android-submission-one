@@ -60,7 +60,7 @@ class ListMovieFragment : Fragment(),
                 )
             )
         }
-        adapter = ItemMovieAdapter(requireContext(), null, itemClicked)
+        adapter = ItemMovieAdapter(requireContext(),itemClicked)
 
         view?.let{
             NavigationUI.setupActionBarWithNavController(
@@ -104,9 +104,8 @@ class ListMovieFragment : Fragment(),
         super.onActivityCreated(savedInstanceState)
         binding.listMovie.adapter = adapter
         viewModel.listMovieData.observe(this, Observer {
+            adapter.submitList(it)
             binding.apply {
-                adapter.listMovieData = it
-                listMovie.adapter?.notifyDataSetChanged()
                 listMovie.visibility = RecyclerView.VISIBLE
                 progressBarDataReady.visibility = ProgressBar.INVISIBLE
             }

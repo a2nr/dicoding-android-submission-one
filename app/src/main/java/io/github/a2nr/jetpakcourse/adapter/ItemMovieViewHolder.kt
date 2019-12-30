@@ -20,6 +20,7 @@ import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 
 class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
     RecyclerView.ViewHolder(binding.root) {
+    private var myHolderMovieData:MovieData? = null
     inner class ImageListener : RequestListener<Drawable> {
         override fun onLoadFailed(
             e: GlideException?,
@@ -53,6 +54,7 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
         onClick: ((v: View, data: MovieData) -> Unit)
         ): View {
         movieData?.let {
+            myHolderMovieData = it
             binding.titleText.text = it.title
             binding.languageText.text = it.originalLanguage
             binding.rateText.text = it.voteAverage.toString()
@@ -61,17 +63,19 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
                 onClick.invoke(view, movieData)
             }
             Glide.with(context).asDrawable().error(R.drawable.ic_warning_48px)
-                .fitCenter().diskCacheStrategy(DiskCacheStrategy.AUTOMATIC).load(
-                    MovieDataRepository.getLinkImage(
-                        "300",
-                        it.backdropPath
-                    )
-                )
+                .fitCenter()
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
+                .skipMemoryCache(true)
+                .load(MovieDataRepository.getLinkImage("300", it.backdropPath))
                 .listener(ImageListener())
                 .into(binding.imagePosterMovie)
 
         }
         return binding.root
+    }
+
+    fun clear(context: Context){
+        Glide.with(context).clear(binding.imagePosterMovie);
     }
 
 }
