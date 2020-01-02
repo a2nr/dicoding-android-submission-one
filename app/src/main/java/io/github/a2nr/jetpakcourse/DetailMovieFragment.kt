@@ -28,6 +28,16 @@ class DetailMovieFragment : Fragment() {
     private var movieData: MovieData? = null
     private var isFavorite: Boolean = false
     private lateinit var binding: FragmentMovieDetailBinding
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        movieData?.run{
+//            DetailMovieFragmentDirections.actionDetailMovieFragmentToListMovieFragment(this)
+//        }?.let {
+//            fragmentManager?.addOnBackStackChangedListener {
+//                view?.findNavController()?.navigate(it)
+//            }
+//        }
+//    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -87,11 +97,12 @@ class DetailMovieFragment : Fragment() {
                 }
             floatingActionButton.run { hide();show() }
             movieData?.let {
-                viewModel.doCheckMovieExists(it.id)
+                viewModel.doCheckIsFavorite(it.id)
             }
 
         }.root
     }
+
 
     private fun updateFabIcon() {
         binding.floatingActionButton.run {

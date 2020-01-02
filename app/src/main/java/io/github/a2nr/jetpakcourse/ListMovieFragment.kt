@@ -115,14 +115,6 @@ class ListMovieFragment : Fragment(),
         })
     }
 
-//    override fun onResume() {
-//        if (!viewModel.listMovieData.value.isNullOrEmpty()) {
-//            binding.apply {
-//            }
-//        }
-//        super.onResume()
-//    }
-
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         binding.listMovie.layoutManager = when (newConfig.orientation) {

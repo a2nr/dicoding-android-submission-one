@@ -60,10 +60,10 @@ class ListMovieViewModelTest {
     @get:Rule
     var mainCoroutineRule = MainCoroutineRule()
 
-    lateinit var repository: MovieDataRepository
-    lateinit var viewModel: ListMovieViewModel
+    private lateinit var repository: MovieDataRepository
+    private lateinit var viewModel: ListMovieViewModel
 
-    val context: Context = ApplicationProvider.getApplicationContext<Context>()
+    private val context: Context = ApplicationProvider.getApplicationContext<Context>()
 
     @ExperimentalCoroutinesApi
     @Before

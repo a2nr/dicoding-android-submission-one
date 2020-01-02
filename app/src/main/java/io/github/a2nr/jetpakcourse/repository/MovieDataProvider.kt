@@ -78,8 +78,8 @@ class MovieDataProvider : ContentProvider() {
         var count = 0
         this.context?.let { context ->
             val dao = MovieDatabase.getInstance(context).movieDao()
-            val path_id = MATCHER.match(uri)
-            when (path_id) {
+            val pathId = MATCHER.match(uri)
+            when (pathId) {
                 FAVORITE_ID -> {
                     count++
                     uri.lastPathSegment?.let {

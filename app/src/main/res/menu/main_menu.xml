@@ -14,8 +14,7 @@
                 android:title="@string/tv_show" />
             <item
                 android:id="@+id/type_my_favorite"
-                android:title="@string/favorite"
-                android:visible="true" />
+                android:title="@string/favorite" />
             <item
                 android:id="@+id/type_release_now"
                 android:title="@string/release_now"

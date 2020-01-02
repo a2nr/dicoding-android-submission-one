@@ -55,9 +55,5 @@
                 tools:listitem="@layout/item_movie" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-
-        <!--        </androidx.core.widget.NestedScrollView>-->
-
-
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
 </layout>
