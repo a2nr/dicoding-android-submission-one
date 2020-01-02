@@ -39,10 +39,11 @@ class MovieDataRepositoryTest {
     lateinit var context: Context
     lateinit var repo: MovieDataRepository
     @Before
-    fun setup(){
+    fun setup() {
         context = ApplicationProvider.getApplicationContext()
         repo = MovieDataRepository(MovieDatabase.getInstance(context).movieDao())
     }
+
     @Test
     fun getJSONData() {
         var tmpString = repo.getJSONData(

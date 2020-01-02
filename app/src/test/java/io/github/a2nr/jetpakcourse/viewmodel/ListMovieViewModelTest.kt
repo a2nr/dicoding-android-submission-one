@@ -68,11 +68,14 @@ class ListMovieViewModelTest {
     @ExperimentalCoroutinesApi
     @Before
     fun setUp() {
-        repository = MovieDataRepository(Room.databaseBuilder(
-            context.applicationContext,
-            MovieDatabase::class.java,
-            "movie_database"
-        ).allowMainThreadQueries().fallbackToDestructiveMigration().build().movieDao(), mainCoroutineRule.testDispatcher)
+        repository = MovieDataRepository(
+            Room.databaseBuilder(
+                context.applicationContext,
+                MovieDatabase::class.java,
+                "movie_database"
+            ).allowMainThreadQueries().fallbackToDestructiveMigration().build().movieDao(),
+            mainCoroutineRule.testDispatcher
+        )
         viewModel = ListMovieViewModel(repository)
     }
 
@@ -161,8 +164,8 @@ class ListMovieViewModelTest {
             doGetReleaseMovie(cal)
             listMovieData.observeForTesting {
                 assert(!listMovieData.value.isNullOrEmpty())
-                listMovieData.value?.forEach {
-                    Assert.assertEquals(it.releaseDate, cal)
+                for(i in 0..3){
+                    Assert.assertEquals(listMovieData.value!![i]!!.releaseDate, cal)
                 }
             }
         }

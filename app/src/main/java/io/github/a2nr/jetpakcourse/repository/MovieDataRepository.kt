@@ -100,12 +100,12 @@ class MovieDataRepository(
         EspressoIdlingResource.increment()
         repoCoroutine.launch {
             mutIdExists.value = withContext(dispatcher) {
-                dao.getFavorite(key)?.let { i ->
+                val bool = dao.getFavorite(key)?.let { i ->
                     Log.i("doCheckIsMovieExists", "$i")
-                    (i.idFavorite == key).also {
-                        EspressoIdlingResource.decrement()
-                    }
+                    (i.idFavorite == key)
                 } ?: false
+                EspressoIdlingResource.decrement()
+                bool
             }
         }
     }
@@ -288,7 +288,7 @@ class MovieDataRepository(
                     )?.let {
                         JSONObject(it)
                     }
-                }?:JSONObject()
+                } ?: JSONObject()
             }
         }
     }
@@ -328,21 +328,18 @@ class MovieDataRepository(
     val listDataBuilder
             : (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit) =
         { uri, doneCallback ->
-            EspressoIdlingResource.increment()
             withContext(dispatcher) {
                 val jsonData = getJSONData(uri)
                 val totalPage = jsonData?.let { JSONObject(it).getInt("total_pages") } ?: 0
                 val page = jsonData?.let { JSONObject(it).getInt("page") } ?: 0
                 val data = jsonData?.let { parse2ListMovieData(it) } ?: emptyList()
                 doneCallback(DataInfo(totalPage, page), data)
-                EspressoIdlingResource.decrement()
             }
         }
     private
     val listSingleDataBuilder
             : (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit) =
         { _, doneCallback ->
-            EspressoIdlingResource.increment()
             withContext(dispatcher) {
                 val favAllID = dao.getFavorite()
                 val data = List(favAllID.size) { i ->
@@ -388,11 +385,10 @@ class MovieDataRepository(
                     } ?: MovieData()
                 }
                 doneCallback(DataInfo(1, 1), data)
-                EspressoIdlingResource.decrement()
             }
         }
 
-    private fun buildPageList(builder: (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit))
+    private suspend fun buildPageList(builder: (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit))
             : LiveData<PagedList<MovieData>> =
         LivePagedListBuilder(
             dao.getDataSource(),
@@ -413,11 +409,11 @@ class MovieDataRepository(
         private var curentInfo = DataInfo(0, 0)
 
         init {
-            EspressoIdlingResource.increment()
-            repoCoroutine.launch(dispatcher) {
-                dao.delete()
-                EspressoIdlingResource.decrement()
-            }
+//            EspressoIdlingResource.increment()
+//            repoCoroutine.launch(dispatcher) {
+            dao.delete()
+//                EspressoIdlingResource.decrement()
+//            }
         }
 
         private fun getAndSaveData(

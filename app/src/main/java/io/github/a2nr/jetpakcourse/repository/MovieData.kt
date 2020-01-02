@@ -4,7 +4,6 @@ import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = MovieData.TABLE_NAME)
@@ -24,13 +23,13 @@ data class MovieData(
     constructor(source: Parcel) : this(
         source.readInt(),
         source.readFloat(),
-        source.readString()?:"",
-        source.readString()?:"",
-        source.readString()?:"",
-        source.readString()?:"",
-        source.readString()?:"",
-        source.readString()?:"",
-        source.readString()?:"",
+        source.readString() ?: "",
+        source.readString() ?: "",
+        source.readString() ?: "",
+        source.readString() ?: "",
+        source.readString() ?: "",
+        source.readString() ?: "",
+        source.readString() ?: "",
         source.readLong()
     )
 

@@ -13,12 +13,11 @@ import io.github.a2nr.jetpakcourse.repository.MovieData
 class ItemMovieAdapter(
     private var context: Context,
     var callBack: ((v: View, data: MovieData) -> Unit)
-): PagedListAdapter<MovieData,ItemMovieViewHolder>(DIFF_CALLBACK)
-{
+) : PagedListAdapter<MovieData, ItemMovieViewHolder>(DIFF_CALLBACK) {
     companion object {
-        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MovieData>(){
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MovieData>() {
             override fun areItemsTheSame(oldItem: MovieData, newItem: MovieData): Boolean {
-               return oldItem.id == newItem.id
+                return oldItem.id == newItem.id
             }
 
             override fun areContentsTheSame(oldItem: MovieData, newItem: MovieData): Boolean {
@@ -26,13 +25,14 @@ class ItemMovieAdapter(
             }
         }
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemMovieViewHolder =
         ItemMovieBinding.inflate(LayoutInflater.from(context)).let {
             ItemMovieViewHolder(it)
         }
 
     override fun onBindViewHolder(holder: ItemMovieViewHolder, position: Int) {
-        holder.bind(context,getItem(position),callBack)
+        holder.bind(context, getItem(position), callBack)
     }
 
     override fun onViewRecycled(holder: ItemMovieViewHolder) {

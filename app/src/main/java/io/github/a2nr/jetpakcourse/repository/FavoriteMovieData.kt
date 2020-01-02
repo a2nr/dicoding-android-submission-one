@@ -9,8 +9,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = FavoriteMovieData.NAME)
 data class FavoriteMovieData(
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(name= ID) var id: Int?= null,
-    @ColumnInfo(name = ID_FAVORITE)var idFavorite: Int = -1,
+    @ColumnInfo(name = ID) var id: Int? = null,
+    @ColumnInfo(name = ID_FAVORITE) var idFavorite: Int = -1,
     @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = "",
     @ColumnInfo(name = ORIGINAL_LANGUAGE) var originalLanguage: String = ""
 ) : Parcelable {
@@ -22,7 +22,7 @@ data class FavoriteMovieData(
     override fun describeContents() = 0
 
     override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
-        id?.let{writeInt(it)}
+        id?.let { writeInt(it) }
         writeInt(idFavorite)
     }
 

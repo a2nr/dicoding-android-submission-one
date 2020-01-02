@@ -60,9 +60,9 @@ class ListMovieFragment : Fragment(),
                 )
             )
         }
-        adapter = ItemMovieAdapter(requireContext(),itemClicked)
+        adapter = ItemMovieAdapter(requireContext(), itemClicked)
 
-        view?.let{
+        view?.let {
             NavigationUI.setupActionBarWithNavController(
                 requireActivity() as AppCompatActivity
                 , it.findNavController()
@@ -102,6 +102,9 @@ class ListMovieFragment : Fragment(),
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+
+        binding.listMovie.visibility = RecyclerView.VISIBLE
+        binding.progressBarDataReady.visibility = ProgressBar.INVISIBLE
         binding.listMovie.adapter = adapter
         viewModel.listMovieData.observe(this, Observer {
             adapter.submitList(it)
@@ -112,15 +115,13 @@ class ListMovieFragment : Fragment(),
         })
     }
 
-    override fun onResume() {
-        if (!viewModel.listMovieData.value.isNullOrEmpty()) {
-            binding.apply {
-                listMovie.visibility = RecyclerView.VISIBLE
-                progressBarDataReady.visibility = ProgressBar.INVISIBLE
-            }
-        }
-        super.onResume()
-    }
+//    override fun onResume() {
+//        if (!viewModel.listMovieData.value.isNullOrEmpty()) {
+//            binding.apply {
+//            }
+//        }
+//        super.onResume()
+//    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -185,8 +186,8 @@ class ListMovieFragment : Fragment(),
                 )
             }
         }
-    }.run{
-        when(item.itemId){
+    }.run {
+        when (item.itemId) {
             R.id.setting -> {
                 view?.findNavController()?.navigate(
                     ListMovieFragmentDirections
@@ -196,10 +197,17 @@ class ListMovieFragment : Fragment(),
             R.id.change_lang -> {
                 startActivity(Intent(Settings.ACTION_LOCALE_SETTINGS))
             }
-            else ->{
-                typeMenu.title = item.title
-                listMovie.visibility = RecyclerView.INVISIBLE
-                progressBarDataReady.visibility = ProgressBar.VISIBLE
+            else -> {
+                if (
+                    (item.itemId == R.id.type_movie) ||
+                    (item.itemId == R.id.type_tv_show) ||
+                    (item.itemId == R.id.type_release_now) ||
+                    (item.itemId == R.id.type_my_favorite)
+                ) {
+                    typeMenu.title = item.title
+                    listMovie.visibility = RecyclerView.INVISIBLE
+                    progressBarDataReady.visibility = ProgressBar.VISIBLE
+                }
             }
         }
         true

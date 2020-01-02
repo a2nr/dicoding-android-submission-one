@@ -17,11 +17,11 @@ import io.github.a2nr.jetpakcourse.R
 import io.github.a2nr.jetpakcourse.databinding.ItemMovieBinding
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
-import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 
 class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
     RecyclerView.ViewHolder(binding.root) {
-    private var myHolderMovieData:MovieData? = null
+    private var myHolderMovieData: MovieData? = null
+
     inner class ImageListener : RequestListener<Drawable> {
         override fun onLoadFailed(
             e: GlideException?,
@@ -44,7 +44,6 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
         ): Boolean {
             binding.layoutClickable.visibility = LinearLayout.VISIBLE
             binding.progressBar.visibility = ProgressBar.INVISIBLE
-            EspressoIdlingResource.decrement()
             return false
         }
 
@@ -54,17 +53,16 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
         context: Context,
         movieData: MovieData?,
         onClick: ((v: View, data: MovieData) -> Unit)
-        ): View {
+    ): View {
         movieData?.let {
             myHolderMovieData = it
             binding.titleText.text = it.title
             binding.languageText.text = it.originalLanguage
             binding.rateText.text = it.voteAverage.toString()
             binding.releaseDateText.text = it.releaseDate
-            binding.layoutClickable.setOnClickListener{ view ->
+            binding.layoutClickable.setOnClickListener { view ->
                 onClick.invoke(view, movieData)
             }
-            EspressoIdlingResource.increment()
             Glide.with(context).asDrawable().error(R.drawable.ic_warning_48px)
                 .fitCenter()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -77,7 +75,7 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
         return binding.root
     }
 
-    fun clear(context: Context){
+    fun clear(context: Context) {
         Glide.with(context).clear(binding.imagePosterMovie)
     }
 

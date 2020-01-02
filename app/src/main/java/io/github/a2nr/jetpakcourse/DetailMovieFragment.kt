@@ -51,7 +51,7 @@ class DetailMovieFragment : Fragment() {
                                 key = it.posterPath
                             )
                         )
-                        .listener(object : RequestListener<Drawable>{
+                        .listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(
                                 e: GlideException?,
                                 model: Any?,
