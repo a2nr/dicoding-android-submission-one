@@ -94,4 +94,5 @@ dependencies {
     androidTestImplementation "androidx.room:room-testing:$rootProject.roomVersion"
 
     implementation "androidx.preference:preference:1.1.0"
+    androidTestImplementation 'androidx.test:rules:1.3.0-alpha03'
 }

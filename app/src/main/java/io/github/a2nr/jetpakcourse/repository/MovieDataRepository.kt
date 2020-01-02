@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.github.a2nr.jetpakcourse.BuildConfig
@@ -17,13 +16,17 @@ import org.json.JSONObject
 import java.util.*
 
 class MovieDataRepository(
-    val movieDao: MovieDataAccess?,
+    val dao: MovieDataAccess,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
     companion object {
         const val MOVIE: String = "movie"
         const val TV: String = "tv"
         private const val API_KEY: String = BuildConfig.TMDB_API_KEY
+        fun getLinkMovie(mediaType: String, key: Long, language: String): Uri =
+            ("https://api.themoviedb.org/3/$mediaType/$key?api_key=$API_KEY" +
+                    "&language=$language").toUri()
+
         fun getLinkTrendingMovie(
             media_type: String,
             time_window: String,
@@ -59,31 +62,35 @@ class MovieDataRepository(
     }
 
     private val repoJob = Job()
-    val repoCoroutine = CoroutineScope(Dispatchers.Main + repoJob)
     private val client = OkHttpClient()
+    private var link: ((page: Int) -> Uri)? = null
 
+    val repoCoroutine = CoroutineScope(Dispatchers.Main + repoJob)
+    val pageListData = MutableLiveData<LiveData<PagedList<MovieData>>>()
     val mutIdExists = MutableLiveData<Boolean>()
+
+    private class DataInfo(val totalPage: Int, val page: Int)
 
     fun storeFavorite(movieData: MovieData) {
         EspressoIdlingResource.increment()
-        movieDao?.let {
-            repoCoroutine.launch {
-                withContext(dispatcher) {
-                    it.insert(movieData)
-                    EspressoIdlingResource.decrement()
-                }
+        repoCoroutine.launch {
+            withContext(dispatcher) {
+                dao.insertFavorite(FavoriteMovieData().apply {
+                    this.idFavorite = movieData.id
+                    this.mediaType = movieData.mediaType
+                    this.originalLanguage = movieData.originalLanguage
+                })
+                EspressoIdlingResource.decrement()
             }
         }
     }
 
     fun removeFavorite(movieData: MovieData) {
         EspressoIdlingResource.increment()
-        movieDao?.let {
-            repoCoroutine.launch {
-                withContext(dispatcher) {
-                    it.delete(movieData.id)
-                    EspressoIdlingResource.decrement()
-                }
+        repoCoroutine.launch {
+            withContext(dispatcher) {
+                dao.deleteFavorite(movieData.id)
+                EspressoIdlingResource.decrement()
             }
         }
     }
@@ -93,34 +100,63 @@ class MovieDataRepository(
         EspressoIdlingResource.increment()
         repoCoroutine.launch {
             mutIdExists.value = withContext(dispatcher) {
-                val i = movieDao?.getMovieFromId(key)
-                Log.i("doCheckIsMovieExists", "$i")
-                (i?.id == key).also {
+                dao.getFavorite(key)?.let { i ->
+                    Log.i("doCheckIsMovieExists", "$i")
+                    (i.idFavorite == key).also {
+                        EspressoIdlingResource.decrement()
+                    }
+                } ?: false
+            }
+        }
+    }
+
+    fun doGetFavoriteMovie() {
+        link = { "//favorite".toUri() }
+
+        EspressoIdlingResource.increment()
+        repoCoroutine.launch {
+            pageListData.value = withContext(dispatcher) {
+                buildPageList(listSingleDataBuilder).also {
                     EspressoIdlingResource.decrement()
                 }
             }
         }
     }
 
-    fun doGetFavoriteMovie() {
-        movieDao?.let {
-            buildPageListOffline(it.getDataSource())
-        }
-    }
-
     fun doGetMovies(mediaType: String, time_window: String, language: String) {
         link = { getLinkTrendingMovie(mediaType, time_window, language, it) }
-        buildPageList()
+        EspressoIdlingResource.increment()
+        repoCoroutine.launch {
+            pageListData.value = withContext(dispatcher) {
+                buildPageList(listDataBuilder).also {
+                    EspressoIdlingResource.decrement()
+                }
+            }
+        }
     }
 
     fun doSearchMovies(mediaType: String, queryTittle: String, language: String) {
         link = { getLinkSearchMovie(mediaType, queryTittle, language, it) }
-        buildPageList()
+        EspressoIdlingResource.increment()
+        repoCoroutine.launch {
+            pageListData.value = withContext(dispatcher) {
+                buildPageList(listDataBuilder).also {
+                    EspressoIdlingResource.decrement()
+                }
+            }
+        }
     }
 
     fun doGetReleaseMovie(date: String) {
         link = { getLinkReleaseToday(date, it) }
-        buildPageList()
+        EspressoIdlingResource.increment()
+        repoCoroutine.launch {
+            pageListData.value = withContext(dispatcher) {
+                buildPageList(listDataBuilder).also {
+                    EspressoIdlingResource.decrement()
+                }
+            }
+        }
     }
 
 
@@ -140,93 +176,141 @@ class MovieDataRepository(
         }
     }
 
-    fun parse2MovieData(JSON: String?): List<MovieData>? = JSON?.let { jsonString ->
+    private fun parse2MovieData(jObject: JSONObject): MovieData = jObject.let { o ->
+        /* Start annoying code */
+        MovieData().apply {
+            /* in .js the 'title' tag for movie category,
+             *            'name'  tag for tv category
+             * */
+            this.title = arrayOf("title", "name").run {
+                this.forEach {
+                    if (o.has(it)) {
+                        return@run o.getString(it)
+                    }
+                }
+                "unknown"
+            }
+            this.backdropPath = "backdrop_path".run {
+                if (o.has(this))
+                    o.getString(this)
+                else
+                    "unknown"
+            }
+            this.originalLanguage = "original_language".run {
+                if (o.has(this))
+                    o.getString(this)
+                else
+                    "unknown"
+            }
+            this.mediaType = "media_type".run {
+                if (o.has(this))
+                    o.getString(this)
+                else
+                    "unknown"
+            }
+            this.overview = "overview".run {
+                if (o.has(this))
+                    o.getString(this)
+                else
+                    "unknown"
+            }
+            /* in .js the 'release_date'    tag for movie category,
+             *            'first_air_date'  tag for tv category
+             * */
+            releaseDate = arrayOf("release_date", "first_air_date").run {
+                this.forEach {
+                    if (o.has(it)) {
+                        return@run o.getString(it)
+                    }
+                }
+                "unknown"
+            }
+            this.voteAverage = "vote_average".run {
+                if (o.has(this))
+                    o.getDouble(this).toFloat()
+                else
+                    0f
+            }
+            this.posterPath = "poster_path".run {
+                if (o.has(this))
+                    o.getString(this)
+                else
+                    "unknown"
+            }
+            this.id = "id".run {
+                if (o.has(this))
+                    o.getInt(this)
+                else
+                    -1
+            }
+
+            this.timeInsert = Calendar.getInstance().time.time
+        }
+    }
+
+    private fun checkData(jObjet: JSONObject): JSONObject {
+        if (jObjet.has("media_type"))
+            return jObjet
+        else {
+            val id = "id".run {
+                if (jObjet.has(this))
+                    jObjet.getInt(this)
+                else
+                    -1
+            }
+            val originalLanguage = "original_language".run {
+                if (jObjet.has(this))
+                    jObjet.getString(this)
+                else
+                    "unknown"
+            }
+            return let {
+                try {
+                    getJSONData(
+                        getLinkMovie(
+                            "movie",
+                            id.toLong(),
+                            originalLanguage
+                        )
+                    )?.let {
+                        JSONObject(it)
+                    }.also {
+                        if (it?.has("status_code") == true)
+                            throw Exception("tv")
+                    }
+                } catch (e: Exception) {
+                    getJSONData(
+                        getLinkMovie(
+                            "tv",
+                            id.toLong(),
+                            originalLanguage
+                        )
+                    )?.let {
+                        JSONObject(it)
+                    }
+                }?:JSONObject()
+            }
+        }
+    }
+
+    fun parse2ListMovieData(JSON: String?): List<MovieData>? = JSON?.let { jsonString ->
         /* decode .js into list variable  */
         JSONObject(jsonString).getJSONArray("results").let { jsonArray ->
             try {
                 /* store in List with bloating decoder code*/
                 List(jsonArray.length()) { iii ->
                     jsonArray.getJSONObject(iii).let { o ->
-
                         /* print object in case you fucked */
                         Log.i("doGetMovies", o.toString())
-
-                        /* Start annoying code */
-                        MovieData().apply {
-                            /* in .js the 'title' tag for movie category,
-                             *            'name'  tag for tv category
-                             * */
-                            this.title = arrayOf("title", "name").run {
-                                this.forEach {
-                                    if (o.has(it)) {
-                                        return@run o.getString(it)
-                                    }
-                                }
-                                "unknown"
-                            }
-                            this.backdropPath = "backdrop_path".run {
-                                if (o.has(this))
-                                    o.getString(this)
-                                else
-                                    "unknown"
-                            }
-                            this.originalLanguage = "original_language".run {
-                                if (o.has(this))
-                                    o.getString(this)
-                                else
-                                    "unknown"
-                            }
-                            this.mediaType = "media_type".run {
-                                if (o.has(this))
-                                    o.getString(this)
-                                else
-                                    "unknown"
-                            }
-                            this.overview = "overview".run {
-                                if (o.has(this))
-                                    o.getString(this)
-                                else
-                                    "unknown"
-                            }
-                            /* in .js the 'release_date'    tag for movie category,
-                             *            'first_air_date'  tag for tv category
-                             * */
-                            releaseDate = arrayOf("release_date", "first_air_date").run {
-                                this.forEach {
-                                    if (o.has(it)) {
-                                        return@run o.getString(it)
-                                    }
-                                }
-                                "unknown"
-                            }
-                            this.voteAverage = "vote_average".run {
-                                if (o.has(this))
-                                    o.getDouble(this).toFloat()
-                                else
-                                    0f
-                            }
-                            this.posterPath = "poster_path".run {
-                                if (o.has(this))
-                                    o.getString(this)
-                                else
-                                    "unknown"
-                            }
-                            this.id = "id".run {
-                                if (o.has(this))
-                                    o.getInt(this)
-                                else
-                                    -1
-                            }
-
-                            this.timeInsert = Calendar.getInstance().time.time
-                        }
+                        parse2MovieData(checkData(o))
                     }
+
                 }
             }
             /* if catch invoked, maybe format of .js is changed */
-            catch (e: java.lang.Exception) {
+            catch (e: Exception) {
                 Log.e("ViewModel", e.toString())
-                null
+                emptyList()
             }
         }
     }
@@ -235,61 +319,106 @@ class MovieDataRepository(
     /* pull data from server, wait until done */
     suspend fun fetchData(uri: Uri): List<MovieData>? = withContext(dispatcher) {
         getJSONData(uri)?.let {
-            parse2MovieData(it)
+            parse2ListMovieData(it)
         }
 
     }
 
-    private suspend fun fetchDataUtil(
-        uri: Uri, doneCallback: ((dataInfo: DataInfo, data: List<MovieData>) -> Unit)
-    ) = withContext(dispatcher) {
-        val jsonData = getJSONData(uri)
-        val totalPage = jsonData?.let { JSONObject(it).getInt("total_pages") } ?: 0
-        val page = jsonData?.let { JSONObject(it).getInt("page") } ?: 0
-        val data = jsonData?.let { parse2MovieData(it) } ?: emptyList()
-        doneCallback(DataInfo(totalPage, page), data)
-    }
-
-
-    private class DataInfo(val totalPage: Int, val page: Int)
-
-    private var link: ((page: Int) -> Uri)? = null
-
-    val pageListData = MutableLiveData<LiveData<PagedList<MovieData>>>()
-
-    private fun buildPageListOffline(dataSource: DataSource.Factory<Int, MovieData>) =
-        repoCoroutine.launch {
-            pageListData.value = withContext(dispatcher) {
-                LivePagedListBuilder(
-                    dataSource, PagedList.Config.Builder()
-                        .setPageSize(20)
-                        .setEnablePlaceholders(true)
-                        .setPrefetchDistance(2)
-                        .build()
-                )
-                    .build()
+    private
+    val listDataBuilder
+            : (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit) =
+        { uri, doneCallback ->
+            EspressoIdlingResource.increment()
+            withContext(dispatcher) {
+                val jsonData = getJSONData(uri)
+                val totalPage = jsonData?.let { JSONObject(it).getInt("total_pages") } ?: 0
+                val page = jsonData?.let { JSONObject(it).getInt("page") } ?: 0
+                val data = jsonData?.let { parse2ListMovieData(it) } ?: emptyList()
+                doneCallback(DataInfo(totalPage, page), data)
+                EspressoIdlingResource.decrement()
+            }
+        }
+    private
+    val listSingleDataBuilder
+            : (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit) =
+        { _, doneCallback ->
+            EspressoIdlingResource.increment()
+            withContext(dispatcher) {
+                val favAllID = dao.getFavorite()
+                val data = List(favAllID.size) { i ->
+                    val jObject: JSONObject?
+                    if (favAllID[i].mediaType == "unknown") {
+                        jObject = try {
+                            getJSONData(
+                                getLinkMovie(
+                                    MOVIE,
+                                    favAllID[i].idFavorite.toLong(),
+                                    favAllID[i].originalLanguage
+                                )
+                            )?.let {
+                                JSONObject(it)
+                            }.also {
+                                if (it?.has("status_code") == true)
+                                    throw Exception("tv")
+                            }
+                        } catch (e: Exception) {
+                            getJSONData(
+                                getLinkMovie(
+                                    TV,
+                                    favAllID[i].idFavorite.toLong(),
+                                    favAllID[i].originalLanguage
+                                )
+                            )?.let {
+                                JSONObject(it)
+                            }
+                        }
+                    } else {
+                        jObject = getJSONData(
+                            getLinkMovie(
+                                favAllID[i].mediaType,
+                                favAllID[i].idFavorite.toLong(),
+                                favAllID[i].originalLanguage
+                            )
+                        )?.let {
+                            JSONObject(it)
+                        }
+                    }
+                    jObject?.let {
+                        parse2MovieData(it)
+                    } ?: MovieData()
+                }
+                doneCallback(DataInfo(1, 1), data)
+                EspressoIdlingResource.decrement()
             }
         }
 
-    private fun buildPageList() = repoCoroutine.launch {
-        pageListData.value = withContext(dispatcher) {
-            movieDao?.delete()
-            LivePagedListBuilder(
-                movieDao!!.getDataSource(), PagedList.Config.Builder()
-                    .setPageSize(20)
-                    .setEnablePlaceholders(true)
-                    .setPrefetchDistance(2)
-                    .build()
-            )
-                .setBoundaryCallback(boundary)
+    private fun buildPageList(builder: (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit))
+            : LiveData<PagedList<MovieData>> =
+        LivePagedListBuilder(
+            dao.getDataSource(),
+            PagedList.Config.Builder()
+                .setPageSize(20)
+                .setEnablePlaceholders(true)
+                .setPrefetchDistance(2)
                 .build()
-        }
-    }
+        )
+            .setBoundaryCallback(RepoBoundaryCallback(builder))
+            .build()
 
-    private val boundary = object : PagedList.BoundaryCallback<MovieData>() {
+    private inner class RepoBoundaryCallback(
+        private val callBuilder: (suspend (Uri, doneCallback: ((DataInfo, List<MovieData>) -> Unit)) -> Unit)
+    ) : PagedList.BoundaryCallback<MovieData>() {
 
         private var onLoading = false
         private var curentInfo = DataInfo(0, 0)
+
+        init {
+            EspressoIdlingResource.increment()
+            repoCoroutine.launch(dispatcher) {
+                dao.delete()
+                EspressoIdlingResource.decrement()
+            }
+        }
 
         private fun getAndSaveData(
             page: Int = 1,
@@ -300,15 +429,15 @@ class MovieDataRepository(
                 onLoading = true
                 EspressoIdlingResource.increment()
                 repoCoroutine.launch {
-                    fetchDataUtil(lll(page)) { i, d ->
+                    callBuilder(lll(page)) { i, d ->
                         info = i
-                        movieDao?.insert(d)
+                        dao.insert(d)
                     }.also {
-                        EspressoIdlingResource.decrement()
                         onLoading = false
                         dataInfo?.let {
                             dataInfo(info)
                         }
+                        EspressoIdlingResource.decrement()
                     }
                 }
             }
@@ -329,14 +458,5 @@ class MovieDataRepository(
                     curentInfo = it
                 }
         }
-
-//        override fun onItemAtFrontLoaded(itemAtFront: MovieData) {
-//            super.onItemAtFrontLoaded(itemAtFront)
-//            if (curentInfo.page > 1)
-//                getAndSaveData(curentInfo.page - 1) {
-//                    curentInfo = it
-//                }
-//        }
-
     }
 }

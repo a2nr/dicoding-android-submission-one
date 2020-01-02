@@ -21,6 +21,7 @@ import io.github.a2nr.jetpakcourse.MainActivity
 import io.github.a2nr.jetpakcourse.R
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.repository.MovieDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -326,7 +327,7 @@ class AlarmReceiver : BroadcastReceiver() {
         intent.getStringExtra(TYPE_REMAINDER)?.let { _type ->
             when (_type) {
                 TYPE_REMAINDER_RELEASE -> {
-                    val repo = MovieDataRepository(null)
+                    val repo = MovieDataRepository(MovieDatabase.getInstance(context).movieDao())
                     var callObserveRemove: (() -> Unit)? = null
                     val obs = Observer<List<MovieData>> { data ->
                         str = Array(data.size) {

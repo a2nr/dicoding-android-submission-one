@@ -37,7 +37,7 @@ class MovieDataProvider : ContentProvider() {
                     .getInstance(it).movieDao()
             )
             val cursor = when (MATCHER.match(uri)) {
-                FAVORITE -> dao.movieDao?.getAllCursor()
+                FAVORITE -> dao.dao.getAllCursor()
                 else -> {
                     Log.e("ContentProvider", "URI not found!")
                     null

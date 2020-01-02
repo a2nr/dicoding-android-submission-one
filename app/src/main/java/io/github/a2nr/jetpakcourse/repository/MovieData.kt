@@ -19,7 +19,6 @@ data class MovieData(
     @ColumnInfo(name = OVERVIEW) var overview: String = "",
     @ColumnInfo(name = POSTER_PATH) var posterPath: String = "",
     @ColumnInfo(name = MEDIA_TYPE) var mediaType: String = "",
-    @ColumnInfo(name = IS_FAVORITE) var isFavorite: Boolean = false,
     @ColumnInfo(name = ORDER_ID) var timeInsert: Long = 0
 ) : Parcelable {
     constructor(source: Parcel) : this(
@@ -32,7 +31,6 @@ data class MovieData(
         source.readString()?:"",
         source.readString()?:"",
         source.readString()?:"",
-        1 == source.readInt(),
         source.readLong()
     )
 
@@ -48,7 +46,6 @@ data class MovieData(
         writeString(overview)
         writeString(posterPath)
         writeString(mediaType)
-        writeInt((if (isFavorite) 1 else 0))
         writeLong(timeInsert)
     }
 
@@ -64,7 +61,6 @@ data class MovieData(
         const val OVERVIEW = "overview"
         const val POSTER_PATH = "poster_path"
         const val MEDIA_TYPE = "media_type"
-        const val IS_FAVORITE = "is_favorite"
         const val ORDER_ID = "timeInsert"
 
         @JvmField

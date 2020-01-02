@@ -1,8 +1,10 @@
 package io.github.a2nr.jetpakcourse.repository
 
+import android.content.Context
 import android.os.Build
+import androidx.test.core.app.ApplicationProvider
+import org.junit.Before
 import org.junit.Test
-
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -34,9 +36,15 @@ import java.util.*
 @RunWith(RobolectricTestRunner::class) //this library used to make test easier for mock my repository
 @Config(sdk = [Build.VERSION_CODES.P]) //https://stackoverflow.com/questions/56808485/robolectric-and-android-sdk-29
 class MovieDataRepositoryTest {
+    lateinit var context: Context
+    lateinit var repo: MovieDataRepository
+    @Before
+    fun setup(){
+        context = ApplicationProvider.getApplicationContext()
+        repo = MovieDataRepository(MovieDatabase.getInstance(context).movieDao())
+    }
     @Test
     fun getJSONData() {
-        val repo = MovieDataRepository(null)
         var tmpString = repo.getJSONData(
             MovieDataRepository.getLinkTrendingMovie(
                 "movie",
@@ -73,7 +81,6 @@ class MovieDataRepositoryTest {
 
     @Test
     fun parse2MovieData() {
-        val repo = MovieDataRepository(null)
         var s = repo.getJSONData(
             MovieDataRepository.getLinkTrendingMovie(
                 "movie",
@@ -81,7 +88,7 @@ class MovieDataRepositoryTest {
                 "en"
             )
         )
-        var data = s?.let { repo.parse2MovieData(it) }
+        var data = s?.let { repo.parse2ListMovieData(it) }
         assert(!data.isNullOrEmpty())
 
 
@@ -92,14 +99,14 @@ class MovieDataRepositoryTest {
                 "en"
             )
         )
-        data = s?.let { repo.parse2MovieData(it) }
+        data = s?.let { repo.parse2ListMovieData(it) }
         assert(!data.isNullOrEmpty())
 
 
         s = repo.getJSONData(
             MovieDataRepository.getLinkSearchMovie("movie", "Stein Gate", "en")
         )
-        data = s?.let { repo.parse2MovieData(it) }
+        data = s?.let { repo.parse2ListMovieData(it) }
 
         assert(!data.isNullOrEmpty())
         s = repo.getJSONData(
@@ -110,7 +117,7 @@ class MovieDataRepositoryTest {
                 ).format(Calendar.getInstance().time)
             )
         )
-        data = s?.let { repo.parse2MovieData(it) }
+        data = s?.let { repo.parse2ListMovieData(it) }
         assert(!data.isNullOrEmpty())
     }
 }

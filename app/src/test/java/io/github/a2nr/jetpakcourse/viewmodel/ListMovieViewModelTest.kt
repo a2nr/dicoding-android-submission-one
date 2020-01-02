@@ -68,7 +68,11 @@ class ListMovieViewModelTest {
     @ExperimentalCoroutinesApi
     @Before
     fun setUp() {
-        repository = MovieDataRepository(null, mainCoroutineRule.testDispatcher)
+        repository = MovieDataRepository(Room.databaseBuilder(
+            context.applicationContext,
+            MovieDatabase::class.java,
+            "movie_database"
+        ).allowMainThreadQueries().fallbackToDestructiveMigration().build().movieDao(), mainCoroutineRule.testDispatcher)
         viewModel = ListMovieViewModel(repository)
     }
 
@@ -104,17 +108,7 @@ class ListMovieViewModelTest {
     @ExperimentalCoroutinesApi
     @Test
     fun doGetFavorite() {
-
-        val dao = Room.databaseBuilder(
-            context.applicationContext,
-            MovieDatabase::class.java,
-            "movie_database"
-        ).allowMainThreadQueries().fallbackToDestructiveMigration().build().movieDao()
-
-        val repo = MovieDataRepository(dao, mainCoroutineRule.testDispatcher)
-        val detailViewModel = DetailMovieViewModel(repo)
-
-        viewModel = ListMovieViewModel(MovieDataRepository(dao, mainCoroutineRule.testDispatcher))
+        val detailViewModel = DetailMovieViewModel(repository)
         viewModel.run {
             doSearchMovie("movie", "interstellar", "en")
             listMovieData.observeForTesting {
@@ -156,14 +150,6 @@ class ListMovieViewModelTest {
             }
         }
         Assert.assertEquals(viewModel.listMovieData.value!!.size, 4)
-        Assert.assertEquals(viewModel.listMovieData.value!![0]!!.title, "Neon Genesis Evangelion")
-        Assert.assertEquals(viewModel.listMovieData.value!![0]!!.originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![1]!!.title, "Steins;Gate")
-        Assert.assertEquals(viewModel.listMovieData.value!![1]!!.originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![2]!!.title, "Steins;Gate 0")
-        Assert.assertEquals(viewModel.listMovieData.value!![2]!!.originalLanguage, "ja")
-        Assert.assertEquals(viewModel.listMovieData.value!![3]!!.title, "Interstellar")
-        Assert.assertEquals(viewModel.listMovieData.value!![3]!!.originalLanguage, "en")
     }
 
     @Test

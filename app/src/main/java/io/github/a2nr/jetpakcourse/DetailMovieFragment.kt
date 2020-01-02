@@ -1,5 +1,6 @@
 package io.github.a2nr.jetpakcourse
 
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,10 +9,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.snackbar.Snackbar
 import io.github.a2nr.jetpakcourse.databinding.FragmentMovieDetailBinding
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 import io.github.a2nr.jetpakcourse.viewmodel.AppViewModelFactory
 import io.github.a2nr.jetpakcourse.viewmodel.DetailMovieViewModel
 import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
@@ -38,12 +44,33 @@ class DetailMovieFragment : Fragment() {
                     releaseDate.text = it.releaseDate
                     titleTextView.text = it.title
                     voteAverage.text = it.voteAverage.toString()
+                    EspressoIdlingResource.increment()
                     Glide.with(this@DetailMovieFragment)
                         .load(
                             MovieDataRepository.getLinkImage(
                                 key = it.posterPath
                             )
                         )
+                        .listener(object : RequestListener<Drawable>{
+                            override fun onLoadFailed(
+                                e: GlideException?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                isFirstResource: Boolean
+                            ): Boolean = false
+
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
+                                EspressoIdlingResource.decrement()
+                                return false
+                            }
+
+                        })
                         .fitCenter()
                         .into(this.posterImageView)
                 }

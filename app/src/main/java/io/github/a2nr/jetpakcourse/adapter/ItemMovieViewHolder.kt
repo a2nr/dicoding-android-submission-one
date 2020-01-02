@@ -17,6 +17,7 @@ import io.github.a2nr.jetpakcourse.R
 import io.github.a2nr.jetpakcourse.databinding.ItemMovieBinding
 import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
+import io.github.a2nr.jetpakcourse.utils.EspressoIdlingResource
 
 class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
     RecyclerView.ViewHolder(binding.root) {
@@ -43,6 +44,7 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
         ): Boolean {
             binding.layoutClickable.visibility = LinearLayout.VISIBLE
             binding.progressBar.visibility = ProgressBar.INVISIBLE
+            EspressoIdlingResource.decrement()
             return false
         }
 
@@ -62,6 +64,7 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
             binding.layoutClickable.setOnClickListener{ view ->
                 onClick.invoke(view, movieData)
             }
+            EspressoIdlingResource.increment()
             Glide.with(context).asDrawable().error(R.drawable.ic_warning_48px)
                 .fitCenter()
                 .diskCacheStrategy(DiskCacheStrategy.NONE)
@@ -75,7 +78,7 @@ class ItemMovieViewHolder(private val binding: ItemMovieBinding) :
     }
 
     fun clear(context: Context){
-        Glide.with(context).clear(binding.imagePosterMovie);
+        Glide.with(context).clear(binding.imagePosterMovie)
     }
 
 }

@@ -28,6 +28,7 @@ import android.os.Build
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import io.github.a2nr.jetpakcourse.repository.MovieData
 import io.github.a2nr.jetpakcourse.repository.MovieDataAccess
 import io.github.a2nr.jetpakcourse.repository.MovieDataRepository
 import io.github.a2nr.jetpakcourse.repository.MovieDatabase
@@ -75,18 +76,20 @@ class DetailMovieViewModelTest {
 
     @Test
     fun markAsFavorite() {
+        lateinit var savedMovieToCompare: MovieData
         listViewModel.run {
             doSearchMovie("movie", "evangelion", "en")
             listMovieData.observeForTesting {
                 listMovieData.value?.get(0)?.let {
                     viewModel.markAsFavorite(it)
+                    savedMovieToCompare = it
                 }
             }
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
                     listMovieData.value!![0]!!.title,
-                    "Neon Genesis Evangelion: The End of Evangelion"
+                    savedMovieToCompare.title
                 )
             }
         }
@@ -94,18 +97,20 @@ class DetailMovieViewModelTest {
 
     @Test
     fun unMarkAsFavorite() {
+        lateinit var savedMovieToCompare: MovieData
         listViewModel.run {
             doSearchMovie("movie", "evangelion", "en")
             listMovieData.observeForTesting {
                 listMovieData.value?.get(0)?.let {
                     viewModel.markAsFavorite(it)
+                    savedMovieToCompare = it
                 }
             }
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
                     listMovieData.value!![0]!!.title,
-                    "Neon Genesis Evangelion: The End of Evangelion"
+                    savedMovieToCompare.title
                 )
             }
             viewModel.unMarkAsFavorite(listMovieData.value!![0]!!)
@@ -119,25 +124,27 @@ class DetailMovieViewModelTest {
     @Test
     fun doCheckMovieExists() {
         var id = 0
+        lateinit var savedMovieToCompare: MovieData
         listViewModel.run {
             doSearchMovie("movie", "evangelion", "en")
             listMovieData.observeForTesting {
                 listMovieData.value?.get(0)?.let {
                     viewModel.markAsFavorite(it)
+                    savedMovieToCompare = it
                 }
             }
             doGetFavorite()
             listMovieData.observeForTesting {
                 Assert.assertEquals(
                     listMovieData.value!![0]!!.title,
-                    "Neon Genesis Evangelion: The End of Evangelion"
+                    savedMovieToCompare.title
                 )
                 id = listMovieData.value!![0]!!.id
             }
             viewModel.run {
                 doCheckMovieExists(id)
-                isMovieExists.observeForever {
-                    assert(it)
+                isMovieExists.observeForTesting {
+                    assert(isMovieExists.value!!)
                 }
             }
             viewModel.unMarkAsFavorite(listMovieData.value!![0]!!)
@@ -147,8 +154,8 @@ class DetailMovieViewModelTest {
             }
             viewModel.run {
                 doCheckMovieExists(id)
-                isMovieExists.observeForever {
-                    assert(!it)
+                isMovieExists.observeForTesting {
+                    assert(!isMovieExists.value!!)
                 }
             }
         }
