@@ -17,11 +17,11 @@ class ItemMovieAdapter(
     companion object {
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MovieData>() {
             override fun areItemsTheSame(oldItem: MovieData, newItem: MovieData): Boolean {
-                return oldItem.id == newItem.id
+                return oldItem == newItem
             }
 
             override fun areContentsTheSame(oldItem: MovieData, newItem: MovieData): Boolean {
-                return oldItem.title == oldItem.title
+                return oldItem.id == newItem.id
             }
         }
     }

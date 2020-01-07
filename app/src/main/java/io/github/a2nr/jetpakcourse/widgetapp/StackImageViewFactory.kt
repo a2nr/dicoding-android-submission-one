@@ -55,7 +55,7 @@ internal class StackImageViewFactory(
                         .load(
                             MovieDataRepository
                                 .getLinkImage(
-                                    widthPoster.toString(),
+                                    "200",
                                     path
                                 )
                         )

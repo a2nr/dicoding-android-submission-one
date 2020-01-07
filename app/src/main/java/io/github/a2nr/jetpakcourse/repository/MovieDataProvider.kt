@@ -7,6 +7,7 @@ import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
 import android.util.Log
+import io.github.a2nr.jetpakcourse.widgetapp.StackImageAppWidgetProvider
 
 class MovieDataProvider : ContentProvider() {
 
@@ -32,12 +33,19 @@ class MovieDataProvider : ContentProvider() {
         selectionArgs: Array<String>?, sortOrder: String?
     ): Cursor? =
         this.context?.let {
-            val dao = MovieDataRepository(
+            val dataRepository = MovieDataRepository(
                 MovieDatabase
                     .getInstance(it).movieDao()
             )
             val cursor = when (MATCHER.match(uri)) {
-                FAVORITE -> dao.dao.getAllCursor()
+                FAVORITE -> {
+                    val data = dataRepository.favoriteColector(
+                        dataRepository.dao.getFavorite()
+                    )
+                    dataRepository.dao.delete()
+                    dataRepository.dao.insert(data)
+                    dataRepository.dao.getAllCursor()
+                }
                 else -> {
                     Log.e("ContentProvider", "URI not found!")
                     null
@@ -47,7 +55,6 @@ class MovieDataProvider : ContentProvider() {
             cursor
         }
 
-    //TODO create API to fetch new release for remainder feature
     override fun getType(uri: Uri): String? = null
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -83,8 +90,9 @@ class MovieDataProvider : ContentProvider() {
                 FAVORITE_ID -> {
                     count++
                     uri.lastPathSegment?.let {
-                        dao.delete(it.toInt())
+                        dao.deleteFavorite(it.toInt())
                         context.contentResolver.notifyChange(uri, null)
+                        StackImageAppWidgetProvider.sendRefresh(context)
                     }
 
                 }

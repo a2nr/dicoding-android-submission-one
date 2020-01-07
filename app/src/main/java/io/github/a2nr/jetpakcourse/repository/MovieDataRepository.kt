@@ -295,8 +295,8 @@ class MovieDataRepository(
 
     fun parse2ListMovieData(JSON: String?): List<MovieData>? = JSON?.let { jsonString ->
         /* decode .js into list variable  */
-        JSONObject(jsonString).getJSONArray("results").let { jsonArray ->
-            try {
+        try {
+            JSONObject(jsonString).getJSONArray("results").let { jsonArray ->
                 /* store in List with bloating decoder code*/
                 List(jsonArray.length()) { iii ->
                     jsonArray.getJSONObject(iii).let { o ->
@@ -307,11 +307,56 @@ class MovieDataRepository(
 
                 }
             }
-            /* if catch invoked, maybe format of .js is changed */
-            catch (e: Exception) {
-                Log.e("ViewModel", e.toString())
-                emptyList()
+        }
+        /* if catch invoked, maybe format of .js is changed */
+        catch (e: Exception) {
+            Log.e("ViewModel", e.toString())
+            emptyList()
+        }
+    }
+
+    fun favoriteColector(favAllID : List<FavoriteMovieData>): List<MovieData>{
+        return List(favAllID.size) { i ->
+            val jObject: JSONObject?
+            if (favAllID[i].mediaType == "unknown") {
+                jObject = try {
+                    getJSONData(
+                        getLinkMovie(
+                            MOVIE,
+                            favAllID[i].idFavorite.toLong(),
+                            favAllID[i].originalLanguage
+                        )
+                    )?.let {
+                        JSONObject(it)
+                    }.also {
+                        if (it?.has("status_code") == true)
+                            throw Exception("tv")
+                    }
+                } catch (e: Exception) {
+                    getJSONData(
+                        getLinkMovie(
+                            TV,
+                            favAllID[i].idFavorite.toLong(),
+                            favAllID[i].originalLanguage
+                        )
+                    )?.let {
+                        JSONObject(it)
+                    }
+                }
+            } else {
+                jObject = getJSONData(
+                    getLinkMovie(
+                        favAllID[i].mediaType,
+                        favAllID[i].idFavorite.toLong(),
+                        favAllID[i].originalLanguage
+                    )
+                )?.let {
+                    JSONObject(it)
+                }
             }
+            jObject?.let {
+                parse2MovieData(it)
+            } ?: MovieData()
         }
     }
 
@@ -330,8 +375,18 @@ class MovieDataRepository(
         { uri, doneCallback ->
             withContext(dispatcher) {
                 val jsonData = getJSONData(uri)
-                val totalPage = jsonData?.let { JSONObject(it).getInt("total_pages") } ?: 0
-                val page = jsonData?.let { JSONObject(it).getInt("page") } ?: 0
+                val totalPage = jsonData?.let {
+                    if (JSONObject(it).has("total_pages"))
+                        JSONObject(it).getInt("total_pages")
+                    else
+                        0
+                } ?: 0
+                val page = jsonData?.let {
+                    if (JSONObject(it).has("page"))
+                        JSONObject(it).getInt("page")
+                    else
+                        0
+                } ?: 0
                 val data = jsonData?.let { parse2ListMovieData(it) } ?: emptyList()
                 doneCallback(DataInfo(totalPage, page), data)
             }
@@ -342,53 +397,12 @@ class MovieDataRepository(
         { _, doneCallback ->
             withContext(dispatcher) {
                 val favAllID = dao.getFavorite()
-                val data = List(favAllID.size) { i ->
-                    val jObject: JSONObject?
-                    if (favAllID[i].mediaType == "unknown") {
-                        jObject = try {
-                            getJSONData(
-                                getLinkMovie(
-                                    MOVIE,
-                                    favAllID[i].idFavorite.toLong(),
-                                    favAllID[i].originalLanguage
-                                )
-                            )?.let {
-                                JSONObject(it)
-                            }.also {
-                                if (it?.has("status_code") == true)
-                                    throw Exception("tv")
-                            }
-                        } catch (e: Exception) {
-                            getJSONData(
-                                getLinkMovie(
-                                    TV,
-                                    favAllID[i].idFavorite.toLong(),
-                                    favAllID[i].originalLanguage
-                                )
-                            )?.let {
-                                JSONObject(it)
-                            }
-                        }
-                    } else {
-                        jObject = getJSONData(
-                            getLinkMovie(
-                                favAllID[i].mediaType,
-                                favAllID[i].idFavorite.toLong(),
-                                favAllID[i].originalLanguage
-                            )
-                        )?.let {
-                            JSONObject(it)
-                        }
-                    }
-                    jObject?.let {
-                        parse2MovieData(it)
-                    } ?: MovieData()
-                }
+                val data = favoriteColector(favAllID)
                 doneCallback(DataInfo(1, 1), data)
             }
         }
 
-    private suspend fun buildPageList(builder: (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit))
+    private fun buildPageList(builder: (suspend (Uri, ((DataInfo, List<MovieData>) -> Unit)) -> Unit))
             : LiveData<PagedList<MovieData>> =
         LivePagedListBuilder(
             dao.getDataSource(),
@@ -409,11 +423,7 @@ class MovieDataRepository(
         private var curentInfo = DataInfo(0, 0)
 
         init {
-//            EspressoIdlingResource.increment()
-//            repoCoroutine.launch(dispatcher) {
             dao.delete()
-//                EspressoIdlingResource.decrement()
-//            }
         }
 
         private fun getAndSaveData(

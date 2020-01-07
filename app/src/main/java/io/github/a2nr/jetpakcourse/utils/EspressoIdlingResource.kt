@@ -8,20 +8,12 @@ class EspressoIdlingResource {
         private const val RESOURCE = "GLOBAL"
         val esspressoTestIdlingResource = CountingIdlingResource(RESOURCE)
         fun increment() {
-            Log.i(
-                "increment cok!",
-                Log.getStackTraceString(Exception("$esspressoTestIdlingResource"))
-            )
             esspressoTestIdlingResource.increment()
         }
 
         fun decrement() {
             with(esspressoTestIdlingResource.isIdleNow) {
                 if (!this) {
-                    Log.i(
-                        "decrement cok!",
-                        Log.getStackTraceString(Exception("$esspressoTestIdlingResource"))
-                    )
                     esspressoTestIdlingResource.decrement()
                 }
             }
